@@ -1,7 +1,9 @@
 import { type MediaAccessOwner } from '@/media-access/types/MediaAccessOwner';
-import { createContext } from 'react';
+import { createRequiredContext } from '~/utils/createRequiredContext';
 
-export const FrontComponentIframeOwnerContext = createContext<Extract<
-  MediaAccessOwner,
-  { type: 'application' }
-> | null>(null);
+export const [
+  FrontComponentIframeOwnerProvider,
+  useFrontComponentIframeOwnerOrThrow,
+] = createRequiredContext<Extract<MediaAccessOwner, { type: 'application' }>>(
+  'FrontComponentIframeOwner',
+);

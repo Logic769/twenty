@@ -6,7 +6,7 @@ import {
 
 import { FrontComponentInputFocusCleanupEffect } from '@/front-components/components/FrontComponentInputFocusCleanupEffect';
 import { FrontComponentManagedIframe } from '@/front-components/media-session/components/FrontComponentManagedIframe';
-import { FrontComponentIframeOwnerContext } from '@/front-components/media-session/contexts/FrontComponentIframeOwnerContext';
+import { FrontComponentIframeOwnerProvider } from '@/front-components/media-session/contexts/FrontComponentIframeOwnerContext';
 import { FrontComponentInstanceContext } from '@/front-components/states/contexts/FrontComponentInstanceContext';
 import { type RequestMediaCapabilityApproval } from '@/media-access/types/RequestMediaCapabilityApproval';
 import { usePushFocusItemToFocusStack } from '@/ui/utilities/focus/hooks/usePushFocusItemToFocusStack';
@@ -62,7 +62,7 @@ export const FrontComponentRendererProvider = ({
     >
       <FrontComponentInputFocusContext.Provider value={setEditableFocused}>
         <FrontComponentInputFocusCleanupEffect focusId={focusId} />
-        <FrontComponentIframeOwnerContext.Provider
+        <FrontComponentIframeOwnerProvider
           value={{
             type: 'application',
             id: applicationId,
@@ -76,7 +76,7 @@ export const FrontComponentRendererProvider = ({
           >
             {children}
           </FrontComponentIframeHostContext.Provider>
-        </FrontComponentIframeOwnerContext.Provider>
+        </FrontComponentIframeOwnerProvider>
       </FrontComponentInputFocusContext.Provider>
     </FrontComponentInstanceContext.Provider>
   );

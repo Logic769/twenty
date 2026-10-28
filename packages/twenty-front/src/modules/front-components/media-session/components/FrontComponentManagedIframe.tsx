@@ -1,12 +1,11 @@
-import { FrontComponentIframeOwnerContext } from '@/front-components/media-session/contexts/FrontComponentIframeOwnerContext';
+import { useFrontComponentIframeOwnerOrThrow } from '@/front-components/media-session/contexts/FrontComponentIframeOwnerContext';
 import { ManagedIframe } from '@/media-access/components/ManagedIframe';
 import { useWorkspaceIframeMediaPermissions } from '@/media-access/hooks/useWorkspaceIframeMediaPermissions';
-import { useContext, useId } from 'react';
+import { useId } from 'react';
 import {
   type FrontComponentIframeHostProps,
   getRequestedIframeMediaCapabilities,
 } from 'twenty-front-component-renderer';
-import { isDefined } from 'twenty-shared/utils';
 
 type FrontComponentManagedIframeProps = FrontComponentIframeHostProps;
 
@@ -15,13 +14,9 @@ export const FrontComponentManagedIframe = ({
   iframeElement,
   renderIframe,
 }: FrontComponentManagedIframeProps) => {
-  const owner = useContext(FrontComponentIframeOwnerContext);
+  const owner = useFrontComponentIframeOwnerOrThrow();
   const iframeId = useId();
   const iframeMediaPermissions = useWorkspaceIframeMediaPermissions();
-
-  if (!isDefined(owner)) {
-    return null;
-  }
 
   return (
     <ManagedIframe
