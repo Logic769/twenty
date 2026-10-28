@@ -10,7 +10,7 @@ import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomState
 import { styled } from '@linaria/react';
 import { useState } from 'react';
 import { MEDIA_CAPABILITIES } from 'twenty-shared/constants';
-import { getSafeUrl, isDefined } from 'twenty-shared/utils';
+import { getSafeUrl, isDefined, isHttpUrl } from 'twenty-shared/utils';
 import { doNotTranslate } from 'twenty-shared/i18n';
 import { themeCssVariables } from 'twenty-ui/theme';
 
@@ -95,9 +95,9 @@ export const IframeWidget = ({ widget }: IframeWidgetProps) => {
   };
 
   const safeUrl = isDefined(url) ? getSafeUrl(url) : undefined;
-  const isHttpUrl = isDefined(safeUrl) && /^https?:\/\//i.test(safeUrl);
+  const hasHttpUrl = isDefined(safeUrl) && isHttpUrl(safeUrl);
 
-  if (hasError || !isHttpUrl) {
+  if (hasError || !hasHttpUrl) {
     return (
       <StyledContainer $isEditMode={isPageLayoutInEditMode}>
         <StyledErrorContainer>
