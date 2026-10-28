@@ -46,10 +46,10 @@ export const SettingsSecurityIframeMediaPermissionForm = ({
   const { t } = useLingui();
   const { savePermission } = useSettingsSecurityIframeMediaPermissionsOrThrow();
   const [originInput, setOriginInput] = useState('');
-  const [microphone, setMicrophone] = useState(false);
-  const [camera, setCamera] = useState(false);
+  const [isMicrophoneAllowed, setIsMicrophoneAllowed] = useState(false);
+  const [isCameraAllowed, setIsCameraAllowed] = useState(false);
   const [error, setError] = useState<string>();
-  const hasSelectedCapability = microphone || camera;
+  const hasSelectedCapability = isMicrophoneAllowed || isCameraAllowed;
 
   const handleAddOrigin = async () => {
     if (disabled || !hasSelectedCapability) {
@@ -72,10 +72,16 @@ export const SettingsSecurityIframeMediaPermissionForm = ({
       return;
     }
 
-    if (await savePermission({ origin, microphone, camera })) {
+    if (
+      await savePermission({
+        origin,
+        microphone: isMicrophoneAllowed,
+        camera: isCameraAllowed,
+      })
+    ) {
       setOriginInput('');
-      setMicrophone(false);
-      setCamera(false);
+      setIsMicrophoneAllowed(false);
+      setIsCameraAllowed(false);
       setError(undefined);
     }
   };
@@ -98,19 +104,19 @@ export const SettingsSecurityIframeMediaPermissionForm = ({
       <StyledControls>
         <StyledLabel>
           <Switch
-            checked={microphone}
+            checked={isMicrophoneAllowed}
             disabled={disabled}
             size="sm"
-            onCheckedChange={setMicrophone}
+            onCheckedChange={setIsMicrophoneAllowed}
           />
           <Text render={<span />}>{t`Microphone`}</Text>
         </StyledLabel>
         <StyledLabel>
           <Switch
-            checked={camera}
+            checked={isCameraAllowed}
             disabled={disabled}
             size="sm"
-            onCheckedChange={setCamera}
+            onCheckedChange={setIsCameraAllowed}
           />
           <Text render={<span />}>{t`Camera`}</Text>
         </StyledLabel>
