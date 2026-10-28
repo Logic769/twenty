@@ -261,8 +261,8 @@ import { AddCustomConfigToConnectionProviderFastInstanceCommand } from 'src/data
 import { AddObjectMetadataDisabledObjectPermissionActionsFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-fast-1793111477950-add-object-metadata-disabled-object-permission-actions';
 import { BackfillApplicationAutoUpgradeSlowInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-slow-1793170402367-backfill-application-auto-upgrade';
 import { AddMessagingProviderFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-52/2-52-instance-command-fast-1793032438837-add-messaging-provider';
-import { AddWorkspaceIframeMediaPermissionsFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-52/2-52-instance-command-fast-1793034149026-add-workspace-iframe-media-permissions';
 import { AddMcpServerFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-fast-1793150000000-add-mcp-server';
+import { AddWorkspaceIframeMediaPermissionsFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-fast-1793181109355-add-workspace-iframe-media-permissions';
 
 export const INSTANCE_COMMANDS = [
   AddViewFieldGroupIdIndexOnViewFieldFastInstanceCommand,
@@ -524,8 +524,8 @@ export const INSTANCE_COMMANDS = [
   AddParticipantHandleFieldToMessageChannelFastInstanceCommand,
   AddCustomConfigToConnectionProviderFastInstanceCommand,
   AddMessagingProviderFastInstanceCommand,
-  AddWorkspaceIframeMediaPermissionsFastInstanceCommand,
   AddMcpServerFastInstanceCommand,
   AddObjectMetadataDisabledObjectPermissionActionsFastInstanceCommand,
   BackfillApplicationAutoUpgradeSlowInstanceCommand,
+  AddWorkspaceIframeMediaPermissionsFastInstanceCommand,
 ];
