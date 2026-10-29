@@ -1,43 +1,43 @@
-import { intersectIframeMediaPermissions } from '@/media-access/utils/intersectIframeMediaPermissions';
+import { intersectIframeMediaPermissions } from '../intersectIframeMediaPermissions';
 
 const PHONE_ORIGIN = 'https://phone.example.com';
 const VIDEO_ORIGIN = 'https://video.example.com';
 
 describe('intersectIframeMediaPermissions', () => {
-  it('ignores origins approved after the document was served', () => {
+  it('drops origins missing from the allowed permissions', () => {
     expect(
       intersectIframeMediaPermissions({
         permissions: [
           { origin: PHONE_ORIGIN, microphone: true, camera: false },
           { origin: VIDEO_ORIGIN, microphone: true, camera: true },
         ],
-        documentPermissions: [
+        allowedPermissions: [
           { origin: PHONE_ORIGIN, microphone: true, camera: false },
         ],
       }),
     ).toEqual([{ origin: PHONE_ORIGIN, microphone: true, camera: false }]);
   });
 
-  it('applies capabilities revoked after the document was served', () => {
+  it('keeps only the capabilities both sides grant', () => {
     expect(
       intersectIframeMediaPermissions({
         permissions: [
           { origin: VIDEO_ORIGIN, microphone: true, camera: false },
         ],
-        documentPermissions: [
+        allowedPermissions: [
           { origin: VIDEO_ORIGIN, microphone: true, camera: true },
         ],
       }),
     ).toEqual([{ origin: VIDEO_ORIGIN, microphone: true, camera: false }]);
   });
 
-  it('drops origins whose remaining capabilities are all disabled', () => {
+  it('drops origins left without any capability', () => {
     expect(
       intersectIframeMediaPermissions({
         permissions: [
           { origin: VIDEO_ORIGIN, microphone: false, camera: true },
         ],
-        documentPermissions: [
+        allowedPermissions: [
           { origin: VIDEO_ORIGIN, microphone: true, camera: false },
         ],
       }),

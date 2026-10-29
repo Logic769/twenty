@@ -73,7 +73,7 @@ export const SettingsSecurityIframeMediaPermissions = () => {
     <Section.Root>
       <Section.Header
         title={t`Embedded website media access`}
-        description={t`Choose which embedded websites can request microphone or camera access. Members still need to enable access and approve the browser permission.`}
+        description={t`Choose which websites embedded in iframe widgets can request microphone or camera access. Members still need to enable access and approve the browser permission.`}
       />
       <StyledContent>
         {isDefined(error) && (

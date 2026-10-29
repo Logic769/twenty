@@ -2501,6 +2501,7 @@ type FormFieldConfiguration {
 
 type FrontComponent {
   applicationGrantedCapabilities: [String!]
+  applicationGrantedIframeMediaPermissions: [IframeMediaPermission!]
   applicationId: UUID!
   applicationName: String
   applicationTokenPair: ApplicationTokenPair @deprecated(reason: "Use generateFrontComponentApplicationTokenPair")
@@ -2908,6 +2909,7 @@ type MarketplaceAppDetail {
   objects: [MarketplaceAppObject!]
   pricingDescription: String
   requestedCapabilities: [String!]!
+  requestedIframeMediaPermissions: [IframeMediaPermission!]!
   roles: [MarketplaceAppRole!]
   screenshots: [String!]! @deprecated(reason: "Use galleryImages instead")
   sourcePackage: String

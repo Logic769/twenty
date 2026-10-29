@@ -6,7 +6,10 @@ import { Readable } from 'stream';
 import { type ReadableStream } from 'stream/web';
 
 import { type NextFunction, type Request, type Response } from 'express';
+import { type IframeMediaPermission } from 'twenty-shared/types';
 import { isDefined, normalizeAllowedIframeOrigin } from 'twenty-shared/utils';
+
+import { toIframeMediaPermissions } from 'src/engine/core-modules/application/utils/to-iframe-media-permissions.util';
 
 import { ClientConfigService } from 'src/engine/core-modules/client-config/services/client-config.service';
 import { WorkspaceDomainsService } from 'src/engine/core-modules/domain/workspace-domains/services/workspace-domains.service';
@@ -16,6 +19,7 @@ import { isFrontendDocumentRequest } from 'src/engine/core-modules/frontend/util
 import { renderFrontendHtml } from 'src/engine/core-modules/frontend/utils/render-frontend-html.util';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { WorkspaceNotFoundDefaultError } from 'src/engine/core-modules/workspace/workspace.exception';
+import { WorkspaceCacheService } from 'src/engine/workspace-cache/services/workspace-cache.service';
 import { getRequestBaseUrl } from 'src/utils/get-request-base-url.util';
 import { streamToBuffer } from 'src/utils/stream-to-buffer';
 
@@ -30,6 +34,7 @@ export class FrontendService {
   constructor(
     private readonly clientConfigService: ClientConfigService,
     private readonly workspaceDomainsService: WorkspaceDomainsService,
+    private readonly workspaceCacheService: WorkspaceCacheService,
     @Inject('FRONTEND_PATH') readonly frontPath: string,
     twentyConfigService: TwentyConfigService,
   ) {
@@ -93,6 +98,19 @@ export class FrontendService {
     return template;
   }
 
+  private async getApplicationIframeMediaPermissions(
+    workspaceId: string,
+  ): Promise<IframeMediaPermission[]> {
+    const { flatApplicationMaps } =
+      await this.workspaceCacheService.getOrRecompute(workspaceId, [
+        'flatApplicationMaps',
+      ]);
+
+    return Object.values(flatApplicationMaps.byId).flatMap(
+      (flatApplication) => flatApplication?.grantedIframeMediaPermissions ?? [],
+    );
+  }
+
   async serveDocument(
     request: Request,
     response: Response,
@@ -144,7 +162,22 @@ export class FrontendService {
         .map(normalizeAllowedIframeOrigin)
         .filter(isDefined);
 
-      const iframeMediaPermissions = workspace?.iframeMediaPermissions ?? [];
+      const applicationIframeMediaPermissions = isDefined(workspace)
+        ? await this.getApplicationIframeMediaPermissions(workspace.id).catch(
+            (error: unknown) => {
+              this.logger.error(
+                'Unable to load application iframe media permissions',
+                error,
+              );
+
+              return [];
+            },
+          )
+        : [];
+      const iframeMediaPermissions = toIframeMediaPermissions([
+        ...(workspace?.iframeMediaPermissions ?? []),
+        ...applicationIframeMediaPermissions,
+      ]);
 
       response.setHeader(
         'Permissions-Policy',

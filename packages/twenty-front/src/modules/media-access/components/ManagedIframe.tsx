@@ -1,7 +1,6 @@
 import { ManagedIframeSession } from '@/media-access/components/ManagedIframeSession';
 import { type ManagedIframeProps } from '@/media-access/types/ManagedIframeProps';
 import { getManagedIframeMediaPermission } from '@/media-access/utils/getManagedIframeMediaPermission';
-import { restrictIframeMediaPermission } from '@/media-access/utils/restrictIframeMediaPermission';
 
 export const ManagedIframe = ({
   src,
@@ -53,19 +52,6 @@ export const ManagedIframe = ({
       ownerId={ownerId}
       ownerName={owner.name}
       permission={permission}
-      grantedPermission={
-        owner.type === 'application'
-          ? restrictIframeMediaPermission({
-              permission,
-              capabilities: owner.grantedCapabilities,
-            })
-          : permission
-      }
-      requestCapabilityApproval={
-        owner.type === 'application'
-          ? owner.requestCapabilityApproval
-          : undefined
-      }
     />
   );
 };

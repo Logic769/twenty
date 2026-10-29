@@ -5183,6 +5183,9 @@ export default {
             "applicationGrantedCapabilities": [
                 1
             ],
+            "applicationGrantedIframeMediaPermissions": [
+                296
+            ],
             "applicationId": [
                 526
             ],
@@ -6029,6 +6032,9 @@ export default {
             ],
             "requestedCapabilities": [
                 1
+            ],
+            "requestedIframeMediaPermissions": [
+                296
             ],
             "roles": [
                 337

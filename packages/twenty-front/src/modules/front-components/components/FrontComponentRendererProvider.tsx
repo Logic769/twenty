@@ -8,17 +8,16 @@ import { FrontComponentInputFocusCleanupEffect } from '@/front-components/compon
 import { FrontComponentManagedIframe } from '@/front-components/media-session/components/FrontComponentManagedIframe';
 import { FrontComponentIframeOwnerProvider } from '@/front-components/media-session/contexts/FrontComponentIframeOwnerContext';
 import { FrontComponentInstanceContext } from '@/front-components/states/contexts/FrontComponentInstanceContext';
-import { type RequestMediaCapabilityApproval } from '@/media-access/types/RequestMediaCapabilityApproval';
 import { usePushFocusItemToFocusStack } from '@/ui/utilities/focus/hooks/usePushFocusItemToFocusStack';
 import { useRemoveFocusItemFromFocusStackById } from '@/ui/utilities/focus/hooks/useRemoveFocusItemFromFocusStackById';
 import { FocusComponentType } from '@/ui/utilities/focus/types/FocusComponentType';
+import { type IframeMediaPermission } from 'twenty-shared/types';
 
 type FrontComponentRendererProviderProps = {
   frontComponentId: string;
   applicationId: string;
   applicationName: string;
-  applicationGrantedCapabilities: readonly string[];
-  requestMediaCapabilityApproval: RequestMediaCapabilityApproval;
+  applicationGrantedIframeMediaPermissions: readonly IframeMediaPermission[];
   children: React.ReactNode;
 };
 
@@ -26,8 +25,7 @@ export const FrontComponentRendererProvider = ({
   frontComponentId,
   applicationId,
   applicationName,
-  applicationGrantedCapabilities,
-  requestMediaCapabilityApproval,
+  applicationGrantedIframeMediaPermissions,
   children,
 }: FrontComponentRendererProviderProps) => {
   const focusId = `front-component-input-focus-${frontComponentId}`;
@@ -64,11 +62,12 @@ export const FrontComponentRendererProvider = ({
         <FrontComponentInputFocusCleanupEffect focusId={focusId} />
         <FrontComponentIframeOwnerProvider
           value={{
-            type: 'application',
-            id: applicationId,
-            name: applicationName,
-            grantedCapabilities: applicationGrantedCapabilities,
-            requestCapabilityApproval: requestMediaCapabilityApproval,
+            owner: {
+              type: 'application',
+              id: applicationId,
+              name: applicationName,
+            },
+            iframeMediaPermissions: applicationGrantedIframeMediaPermissions,
           }}
         >
           <FrontComponentIframeHostContext.Provider

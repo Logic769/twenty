@@ -8,7 +8,6 @@ import { themeCssVariables } from 'twenty-ui/theme';
 type ManagedIframeEnableButtonProps = {
   anchorElement: Element;
   label: string;
-  disabled: boolean;
   onClick: () => void;
 };
 
@@ -23,7 +22,6 @@ const StyledControls = styled.div`
 export const ManagedIframeEnableButton = ({
   anchorElement,
   label,
-  disabled,
   onClick,
 }: ManagedIframeEnableButtonProps) => {
   const { refs, floatingStyles, middlewareData, isPositioned } = useFloating({
@@ -48,7 +46,7 @@ export const ManagedIframeEnableButton = ({
       className={FRONT_COMPONENT_HOST_UI_CLASS_NAME}
       style={{ ...floatingStyles, visibility: isHidden ? 'hidden' : 'visible' }}
     >
-      <Button size="sm" variant="outline" disabled={disabled} onClick={onClick}>
+      <Button size="sm" variant="outline" onClick={onClick}>
         {label}
       </Button>
     </StyledControls>
