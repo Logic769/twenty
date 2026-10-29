@@ -30,6 +30,7 @@ export const fromWorkspaceEntityToFlat = (
   isMicrosoftAuthBypassEnabled: entity.isMicrosoftAuthBypassEnabled,
   isCustomDomainEnabled: entity.isCustomDomainEnabled,
   allowedIframeOrigins: entity.allowedIframeOrigins,
+  iframeMediaPermissions: entity.iframeMediaPermissions,
   editableProfileFields: entity.editableProfileFields,
   defaultRoleId: entity.defaultRoleId,
   aiChatModelTier: entity.aiChatModelTier,

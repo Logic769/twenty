@@ -10,6 +10,7 @@ import { msg } from '@lingui/core/macro';
 import chunk from 'lodash.chunk';
 import { setTimeout } from 'node:timers/promises';
 import { isAiModelTier, type AiModelTier } from 'twenty-shared/ai';
+import { type IframeMediaPermission } from 'twenty-shared/types';
 import {
   MAX_ALLOWED_IFRAME_ORIGINS,
   PermissionFlagType,
@@ -19,6 +20,7 @@ import {
   isAutoSelectModelId,
   isDefined,
   normalizeAllowedIframeOrigin,
+  normalizeIframeMediaPermissionOrigin,
 } from 'twenty-shared/utils';
 import { WorkspaceActivationStatus } from 'twenty-shared/workspace';
 import {
@@ -80,6 +82,7 @@ import {
   type WorkspaceDeletionApplicationUninstallJobData,
 } from 'src/engine/core-modules/workspace/jobs/workspace-deletion-application-uninstall.job';
 import { getWorkspaceApplicationUninstallLockName } from 'src/engine/core-modules/workspace/utils/get-workspace-application-uninstall-lock-name.util';
+import { upsertIframeMediaPermission } from 'src/engine/core-modules/workspace/utils/upsert-iframe-media-permission.util';
 import { WORKSPACE_REACTIVATED_EVENT } from 'src/engine/core-modules/workspace/constants/workspace-reactivated-event.constant';
 import { WORKSPACE_SOFT_DELETED_EVENT } from 'src/engine/core-modules/workspace/constants/workspace-soft-deleted-event.constant';
 import { WORKSPACE_SUSPENDED_EVENT } from 'src/engine/core-modules/workspace/constants/workspace-suspended-event.constant';
@@ -328,6 +331,62 @@ export class WorkspaceService {
       'workspaceEntity',
       workspaceId,
     );
+    return updatedWorkspace;
+  }
+
+  async updateWorkspaceIframeMediaPermissions({
+    workspaceId,
+    input,
+  }: {
+    workspaceId: string;
+    input: IframeMediaPermission;
+  }): Promise<WorkspaceEntity> {
+    const origin = normalizeIframeMediaPermissionOrigin(input.origin);
+
+    if (!isDefined(origin)) {
+      throw new WorkspaceException(
+        'Invalid iframe media permission origin',
+        WorkspaceExceptionCode.IFRAME_MEDIA_PERMISSION_ORIGIN_NOT_VALID,
+      );
+    }
+
+    const updatedWorkspace = await this.workspaceRepository.manager.transaction(
+      async (manager) => {
+        const repository = manager.getRepository(WorkspaceEntity);
+        const workspace = await repository.findOne({
+          where: { id: workspaceId },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        assertIsDefinedOrThrow(workspace, WorkspaceNotFoundDefaultError);
+
+        const iframeMediaPermissions = upsertIframeMediaPermission({
+          permissions: workspace.iframeMediaPermissions ?? [],
+          permission: {
+            origin,
+            microphone: input.microphone,
+            camera: input.camera,
+          },
+        });
+
+        if (iframeMediaPermissions.length > MAX_ALLOWED_IFRAME_ORIGINS) {
+          throw new WorkspaceException(
+            'Too many iframe media origins',
+            WorkspaceExceptionCode.IFRAME_ORIGIN_LIMIT_EXCEEDED,
+          );
+        }
+
+        await repository.update(workspaceId, { iframeMediaPermissions });
+
+        return { ...workspace, iframeMediaPermissions };
+      },
+    );
+
+    await this.coreEntityCacheService.invalidate(
+      'workspaceEntity',
+      workspaceId,
+    );
+
     return updatedWorkspace;
   }
 
