@@ -145,9 +145,9 @@ describe('Answering a chat tool call', () => {
   const readMentionState = async (memberId = workspaceMemberId) => {
     const [participant]: {
       lastMentionedAt: Date | null;
-      lastResolvedMentionAt: Date | null;
+      mentionsResolvedAt: Date | null;
     }[] = await global.testDataSource.query(
-      `SELECT "lastMentionedAt", "lastResolvedMentionAt" FROM "${schema}"."agentChatThreadParticipant"
+      `SELECT "lastMentionedAt", "mentionsResolvedAt" FROM "${schema}"."agentChatThreadParticipant"
        WHERE "threadId" = $1 AND "workspaceMemberId" = $2`,
       [threadId, memberId],
     );
@@ -301,7 +301,7 @@ describe('Answering a chat tool call', () => {
 
     const answeringMember = await readMentionState();
 
-    expect(answeringMember.lastResolvedMentionAt).toEqual(
+    expect(answeringMember.mentionsResolvedAt).toEqual(
       answeringMember.lastMentionedAt,
     );
     expect(await readMentionState(WORKSPACE_MEMBER_DATA_SEED_IDS.JONY)).toEqual(
@@ -327,9 +327,7 @@ describe('Answering a chat tool call', () => {
 
     const participant = await readMentionState();
 
-    expect(participant.lastResolvedMentionAt).toEqual(
-      participant.lastMentionedAt,
-    );
+    expect(participant.mentionsResolvedAt).toEqual(participant.lastMentionedAt);
   });
 
   it('preserves a new mention arriving while an accepted approval executes', async () => {
@@ -347,7 +345,7 @@ describe('Answering a chat tool call', () => {
       .mockImplementationOnce(async () => {
         const participant = await readMentionState();
 
-        expect(participant.lastResolvedMentionAt).toEqual(
+        expect(participant.mentionsResolvedAt).toEqual(
           acceptedMention.lastMentionedAt,
         );
         expect(await readToolCallStatus(toolCallId)).toBe('running');
@@ -369,11 +367,11 @@ describe('Answering a chat tool call', () => {
 
       const participant = await readMentionState();
 
-      expect(participant.lastResolvedMentionAt).toEqual(
+      expect(participant.mentionsResolvedAt).toEqual(
         acceptedMention.lastMentionedAt,
       );
       expect(participant.lastMentionedAt!.getTime()).toBeGreaterThan(
-        participant.lastResolvedMentionAt!.getTime(),
+        participant.mentionsResolvedAt!.getTime(),
       );
     } finally {
       executeTool.mockRestore();
@@ -400,7 +398,7 @@ describe('Answering a chat tool call', () => {
 
       const participant = await readMentionState();
 
-      expect(participant.lastResolvedMentionAt).toEqual(
+      expect(participant.mentionsResolvedAt).toEqual(
         participant.lastMentionedAt,
       );
       expect(await readPendingQuestionMessageId()).toBeNull();
@@ -475,11 +473,11 @@ describe('Answering a chat tool call', () => {
 
       const participant = await readMentionState();
 
-      expect(participant.lastResolvedMentionAt).toEqual(
+      expect(participant.mentionsResolvedAt).toEqual(
         previousMention.lastMentionedAt,
       );
       expect(participant.lastMentionedAt!.getTime()).toBeGreaterThan(
-        participant.lastResolvedMentionAt!.getTime(),
+        participant.mentionsResolvedAt!.getTime(),
       );
     } finally {
       authoredResponse.mockRestore();
