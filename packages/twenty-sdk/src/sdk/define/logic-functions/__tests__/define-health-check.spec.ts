@@ -58,8 +58,9 @@ describe('defineHealthCheck', () => {
   it('should return error when scope is not WORKSPACE or USER', () => {
     const result = defineHealthCheck({
       ...validConfig,
+      // @ts-expect-error apps written in JavaScript can pass any shape
       scope: 'TEAM',
-    } as any);
+    });
 
     expect(result.success).toBe(false);
     expect(result.errors).toEqual([

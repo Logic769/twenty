@@ -20,7 +20,6 @@ import { type ApplicationConfig } from '@/app/manifest/types/application-config.
 import { type LogicFunctionConfig } from '@/app/manifest/types/logic-function-config.type';
 import { type CommandMenuItemConfig } from '@/app/manifest/types/command-menu-item-config.type';
 import { type FrontComponentConfig } from '@/app/manifest/types/front-component-config.type';
-import { type HealthCheckLogicFunctionConfig } from '@/app/manifest/types/health-check-logic-function-config.type';
 import { type IndexConfig } from '@/app/manifest/types/index-config.type';
 import { type PostInstallLogicFunctionConfig } from '@/app/manifest/types/post-install-logic-function-config.type';
 import { type PreInstallLogicFunctionConfig } from '@/app/manifest/types/pre-install-logic-function-config.type';
@@ -380,9 +379,7 @@ export const buildManifest = async (
             universalIdentifier: extract.config.universalIdentifier,
           };
 
-          if (
-            (extract.config as HealthCheckLogicFunctionConfig).scope === 'USER'
-          ) {
+          if ('scope' in extract.config && extract.config.scope === 'USER') {
             userHealthCheckLogicFunctions.push(healthCheck);
           } else {
             healthCheckLogicFunctions.push(healthCheck);

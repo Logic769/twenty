@@ -58,9 +58,9 @@ const USER_HEALTH_CHECK: HealthCheckSource = {
 const HEALTH_CHECKS = [WORKSPACE_HEALTH_CHECK, USER_HEALTH_CHECK];
 
 const buildHealthCheckManifest = ({
-  withUserHealthCheck,
+  shouldIncludeUserHealthCheck,
 }: {
-  withUserHealthCheck: boolean;
+  shouldIncludeUserHealthCheck: boolean;
 }): Manifest =>
   buildBaseManifest({
     appId: APPLICATION_UNIVERSAL_IDENTIFIER,
@@ -81,7 +81,7 @@ const buildHealthCheckManifest = ({
         healthCheckLogicFunction: {
           universalIdentifier: WORKSPACE_HEALTH_CHECK.universalIdentifier,
         },
-        ...(withUserHealthCheck
+        ...(shouldIncludeUserHealthCheck
           ? {
               userHealthCheckLogicFunction: {
                 universalIdentifier: USER_HEALTH_CHECK.universalIdentifier,
@@ -134,7 +134,9 @@ describe('Run my application health check should succeed', () => {
     }
 
     await syncApplication({
-      manifest: buildHealthCheckManifest({ withUserHealthCheck: true }),
+      manifest: buildHealthCheckManifest({
+        shouldIncludeUserHealthCheck: true,
+      }),
       expectToFail: false,
     });
     jest.useRealTimers();
@@ -265,7 +267,9 @@ describe('Run my application health check should succeed', () => {
 
   it('should clear the USER health check when a full sync no longer declares it', async () => {
     await syncApplication({
-      manifest: buildHealthCheckManifest({ withUserHealthCheck: false }),
+      manifest: buildHealthCheckManifest({
+        shouldIncludeUserHealthCheck: false,
+      }),
       expectToFail: false,
     });
     jest.useRealTimers();

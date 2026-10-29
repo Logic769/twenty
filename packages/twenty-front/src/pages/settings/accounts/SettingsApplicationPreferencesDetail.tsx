@@ -5,7 +5,7 @@ import { SettingsApplicationPreferencesHealthBanner } from '@/settings/app-prefe
 import { SettingsApplicationPreferencesHealthCheckEffect } from '@/settings/app-preferences/components/SettingsApplicationPreferencesHealthCheckEffect';
 import { APPLICATION_PREFERENCES_GENERAL_TAB_ID } from '@/settings/app-preferences/constants/ApplicationPreferencesGeneralTabId';
 import { SETTINGS_APPLICATION_PREFERENCES_TAB_LIST_COMPONENT_ID } from '@/settings/app-preferences/constants/SettingsApplicationPreferencesTabListComponentId';
-import { useRunMyApplicationHealthCheck } from '@/settings/app-preferences/hooks/useRunMyApplicationHealthCheck';
+import { useSaveMyApplicationVariablesAndRecheckHealth } from '@/settings/app-preferences/hooks/useSaveMyApplicationVariablesAndRecheckHealth';
 import { type ApplicationWithPreferences } from '@/settings/app-preferences/types/ApplicationWithPreferences';
 import { getApplicationPreferencesGeneralPath } from '@/settings/app-preferences/utils/getApplicationPreferencesGeneralPath';
 import { APPLICATION_VARIABLES_TAB_ID } from '@/settings/applications/constants/ApplicationVariablesTabId';
@@ -61,9 +61,6 @@ export const SettingsApplicationPreferencesDetail = ({
   const { getIcon } = useIcons();
   const currentWorkspace = useAtomStateValue(currentWorkspaceState);
   const navigate = useNavigate();
-  const { runMyApplicationHealthCheck } = useRunMyApplicationHealthCheck(
-    application.id,
-  );
 
   const [updateMyUserApplicationVariable] = useMutation(
     UpdateMyUserApplicationVariableDocument,
@@ -93,17 +90,13 @@ export const SettingsApplicationPreferencesDetail = ({
 
   const hasMissingRequiredVariables = isNonEmptyArray(missingRequiredVariables);
 
-  const saveApplicationVariablesAndRecheckHealth = async () => {
-    const areApplicationVariablesSaved = await saveApplicationVariables();
-
-    if (
-      areApplicationVariablesSaved &&
-      hasUserHealthCheck &&
-      !hasMissingRequiredVariables
-    ) {
-      await runMyApplicationHealthCheck({ shouldKeepPreviousResult: true });
-    }
-  };
+  const { saveApplicationVariablesAndRecheckHealth } =
+    useSaveMyApplicationVariablesAndRecheckHealth({
+      applicationId: application.id,
+      hasUserHealthCheck,
+      hasMissingRequiredVariables,
+      saveApplicationVariables,
+    });
 
   const hasVariablesTab = hasApplicationVariablesTab({
     settingsMenuItems,

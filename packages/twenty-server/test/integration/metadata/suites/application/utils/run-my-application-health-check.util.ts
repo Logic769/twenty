@@ -25,7 +25,7 @@ export const runMyApplicationHealthCheck = async ({
 
   const response = await makeMetadataApiRequest(graphqlOperation, token);
 
-  if (expectToFail === true) {
+  if (expectToFail) {
     warnIfNoErrorButExpectedToFail({
       response,
       errorMessage:
@@ -33,7 +33,7 @@ export const runMyApplicationHealthCheck = async ({
     });
   }
 
-  if (expectToFail === false) {
+  if (!expectToFail) {
     warnIfErrorButNotExpectedToFail({
       response,
       errorMessage:

@@ -332,20 +332,22 @@ export const APPLICATION_PREFERENCES_GRAPHQL_HANDLERS = [
       variables.applicationId,
     );
 
+    if (!isDefined(result)) {
+      return HttpResponse.json({ data: { runMyApplicationHealthCheck: null } });
+    }
+
+    const { action, ...resultFields } = result;
+    const actionWithTypename = isDefined(action)
+      ? { __typename: 'ApplicationHealthCheckAction', ...action }
+      : null;
+
     return HttpResponse.json({
       data: {
-        runMyApplicationHealthCheck: isDefined(result)
-          ? {
-              __typename: 'ApplicationHealthCheckResult',
-              ...result,
-              action: isDefined(result.action)
-                ? {
-                    __typename: 'ApplicationHealthCheckAction',
-                    ...result.action,
-                  }
-                : null,
-            }
-          : null,
+        runMyApplicationHealthCheck: {
+          __typename: 'ApplicationHealthCheckResult',
+          ...resultFields,
+          action: actionWithTypename,
+        },
       },
     });
   }),
