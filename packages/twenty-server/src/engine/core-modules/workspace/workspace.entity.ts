@@ -329,7 +329,7 @@ export class WorkspaceEntity {
   @Field(() => [IframeMediaPermissionDTO], { nullable: true })
   @WasIntroducedInUpgrade({
     upgradeCommandName:
-      '2.54.0_AddWorkspaceIframeMediaPermissionsFastInstanceCommand_1793276388870',
+      '2.54.0_AddWorkspaceIframeMediaPermissionsFastInstanceCommand_1793281599983',
   })
   @Column({ type: 'jsonb', default: [] })
   iframeMediaPermissions: IframeMediaPermission[];
