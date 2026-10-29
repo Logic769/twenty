@@ -263,7 +263,7 @@ import { AddFieldMetadataDisabledFieldPermissionActionsFastInstanceCommand } fro
 import { BackfillApplicationAutoUpgradeSlowInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-slow-1793170402367-backfill-application-auto-upgrade';
 import { AddMessagingProviderFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-52/2-52-instance-command-fast-1793032438837-add-messaging-provider';
 import { AddMcpServerFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-fast-1793150000000-add-mcp-server';
-import { AddWorkspaceIframeMediaPermissionsFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-fast-1793194854578-add-workspace-iframe-media-permissions';
+import { AddWorkspaceIframeMediaPermissionsFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-54/2-54-instance-command-fast-1793265935064-add-workspace-iframe-media-permissions';
 import { AgentAndSkillOverridableEntityFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-53/2-53-instance-command-fast-1793203146887-agent-and-skill-overridable-entity';
 import { DropIsCustomFromAgentSkillViewIndexAndAgentChatChannelFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-54/2-54-instance-command-fast-1793139794914-drop-is-custom-from-agent-skill-view-index-and-agent-chat-channel';
 
@@ -530,8 +530,8 @@ export const INSTANCE_COMMANDS = [
   AddMcpServerFastInstanceCommand,
   AddObjectMetadataDisabledObjectPermissionActionsFastInstanceCommand,
   BackfillApplicationAutoUpgradeSlowInstanceCommand,
-  AddWorkspaceIframeMediaPermissionsFastInstanceCommand,
   AgentAndSkillOverridableEntityFastInstanceCommand,
   DropIsCustomFromAgentSkillViewIndexAndAgentChatChannelFastInstanceCommand,
   AddFieldMetadataDisabledFieldPermissionActionsFastInstanceCommand,
+  AddWorkspaceIframeMediaPermissionsFastInstanceCommand,
 ];
