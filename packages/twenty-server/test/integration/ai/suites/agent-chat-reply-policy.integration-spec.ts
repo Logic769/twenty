@@ -1,5 +1,6 @@
 import { configureChatParticipationModels } from 'test/integration/ai/utils/configure-chat-participation-models.util';
 import { createChatParticipationTestContext } from 'test/integration/ai/utils/create-chat-participation-test-context.util';
+import { FeatureFlagKey } from 'twenty-shared/types';
 
 import { AiChatAssistantMode } from 'src/engine/core-modules/workspace/enums/ai-chat-assistant-mode.enum';
 import { type AgentChatAssistantReplyContext } from 'src/engine/metadata-modules/ai/ai-chat/types/agent-chat-assistant-reply-context.type';
@@ -96,7 +97,6 @@ describe('Assistant reply selection with stored conversation participants', () =
       threadId,
       messageId,
       workspace: await context.getWorkspace(),
-      workspaceMemberId: context.workspaceMemberId,
       userWorkspaceId: context.userWorkspaceId,
     });
 
@@ -372,6 +372,42 @@ describe('Assistant reply selection with stored conversation participants', () =
 
     await expect(shouldExecute({ threadId, messageId })).resolves.toBe(true);
     expect(models.evaluate).not.toHaveBeenCalled();
+  });
+
+  it('executes a message saved before reply contexts unless the mode is Never', async () => {
+    const threadId = await createGroup();
+    const { id: messageId } = await context.saveMessage({ threadId });
+
+    await context.setAssistantModes({
+      aiChatInboxAssistantMode: AiChatAssistantMode.MENTION_ONLY,
+    });
+    await expect(shouldExecute({ threadId, messageId })).resolves.toBe(true);
+    await context.setAssistantModes({
+      aiChatInboxAssistantMode: AiChatAssistantMode.NEVER,
+    });
+    await expect(shouldExecute({ threadId, messageId })).resolves.toBe(false);
+  });
+
+  it('executes a saved turn while the inbox is not enabled', async () => {
+    const threadId = await createGroup(false);
+    const { messageId } = await saveMessageWithReplyContext({
+      threadId,
+      assistantReplyContext: {
+        isAssistantMentioned: false,
+        isDirectAssistantChat: false,
+      },
+    });
+
+    await context.setAssistantModes({
+      aiChatInboxAssistantMode: AiChatAssistantMode.NEVER,
+    });
+    await context.featureFlagService.upsertWorkspaceFeatureFlag({
+      workspaceId: context.workspaceId,
+      featureFlag: FeatureFlagKey.IS_AI_CHAT_INBOX_ENABLED,
+      value: false,
+    });
+
+    await expect(shouldExecute({ threadId, messageId })).resolves.toBe(true);
   });
 
   it('does not exempt a canonical DM with one remaining human at execution time', async () => {

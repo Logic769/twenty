@@ -174,7 +174,6 @@ export class StreamAgentChatJob {
       await this.replyExecutionPolicyService.shouldExecute({
         threadId: data.threadId,
         workspace,
-        workspaceMemberId: authorization.authContext.workspaceMemberId,
         userWorkspaceId: sender.userWorkspaceId,
         messageId: message?.id,
       });
