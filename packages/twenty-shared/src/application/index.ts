@@ -316,6 +316,7 @@ export type { WorkflowManifest } from './workflowManifestType';
 export { workflowManifestSchema } from './workflowManifestType';
 export type { WorkflowStepManifest } from './workflowStepManifestType';
 export {
+  workflowManifestPositionSchema,
   workflowStepFilterManifestSchema,
   workflowStepManifestSchema,
 } from './workflowStepManifestType';
