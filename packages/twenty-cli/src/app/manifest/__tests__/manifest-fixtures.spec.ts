@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 import { stop } from 'esbuild';
 import { EMPTY_YARN_LOCK_CONTENT } from 'twenty-shared/application';
+import { isDefined } from 'twenty-shared/utils';
 import {
   afterAll,
   afterEach,
@@ -381,7 +382,7 @@ export default defineWorkflow({
 export default defineHealthCheck({
   universalIdentifier: '${universalIdentifier}',
   name: '${fileName}',
-  ${scope === undefined ? '' : `scope: '${scope}',`}
+  ${isDefined(scope) ? `scope: '${scope}',` : ''}
   handler: () => ({ status: 'OK' }),
 });
 `,
