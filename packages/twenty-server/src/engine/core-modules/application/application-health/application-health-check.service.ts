@@ -6,9 +6,15 @@ import {
 } from 'twenty-shared/application';
 import { isDefined } from 'twenty-shared/utils';
 
+import {
+  USER_HEALTH_CHECK_RATE_LIMIT_MAX,
+  USER_HEALTH_CHECK_RATE_LIMIT_WINDOW_MS,
+} from 'src/engine/core-modules/application/application-health/constants/user-health-check-rate-limit.constant';
+import { buildUserHealthCheckRateLimitKey } from 'src/engine/core-modules/application/application-health/utils/build-user-health-check-rate-limit-key.util';
 import { ApplicationService } from 'src/engine/core-modules/application/application.service';
 import { type ApplicationHealthCheckResultDTO } from 'src/engine/core-modules/application/dtos/application-health-check-result.dto';
 import { LogicFunctionExecutorService } from 'src/engine/core-modules/logic-function/logic-function-executor/logic-function-executor.service';
+import { ThrottlerService } from 'src/engine/core-modules/throttler/throttler.service';
 
 const UNKNOWN_HEALTH: ApplicationHealthCheckResultDTO = {
   status: ApplicationHealthStatus.UNKNOWN,
@@ -22,6 +28,7 @@ export class ApplicationHealthCheckService {
   constructor(
     private readonly applicationService: ApplicationService,
     private readonly logicFunctionExecutorService: LogicFunctionExecutorService,
+    private readonly throttlerService: ThrottlerService,
   ) {}
 
   async run({
@@ -49,18 +56,64 @@ export class ApplicationHealthCheckService {
     });
   }
 
+  async runForUser({
+    applicationId,
+    workspaceId,
+    userId,
+    userWorkspaceId,
+  }: {
+    applicationId: string;
+    workspaceId: string;
+    userId: string;
+    userWorkspaceId: string;
+  }): Promise<ApplicationHealthCheckResultDTO | null> {
+    const { id: installedApplicationId, userHealthCheckLogicFunctionId } =
+      await this.applicationService.findOneApplicationOrThrow({
+        id: applicationId,
+        workspaceId,
+      });
+
+    if (!isDefined(userHealthCheckLogicFunctionId)) {
+      return null;
+    }
+
+    await this.throttlerService.tokenBucketThrottleOrThrow(
+      buildUserHealthCheckRateLimitKey({
+        workspaceId,
+        userWorkspaceId,
+        applicationId: installedApplicationId,
+      }),
+      1,
+      USER_HEALTH_CHECK_RATE_LIMIT_MAX,
+      USER_HEALTH_CHECK_RATE_LIMIT_WINDOW_MS,
+    );
+
+    return await this.executeHealthCheck({
+      healthCheckLogicFunctionId: userHealthCheckLogicFunctionId,
+      workspaceId,
+      userId,
+      userWorkspaceId,
+    });
+  }
+
   private async executeHealthCheck({
     healthCheckLogicFunctionId,
     workspaceId,
+    userId,
+    userWorkspaceId,
   }: {
     healthCheckLogicFunctionId: string;
     workspaceId: string;
+    userId?: string;
+    userWorkspaceId?: string;
   }): Promise<ApplicationHealthCheckResultDTO> {
     const executionResult = await this.logicFunctionExecutorService
       .execute({
         logicFunctionId: healthCheckLogicFunctionId,
         workspaceId,
         payload: {},
+        userId,
+        userWorkspaceId,
       })
       .catch(() => null);
 

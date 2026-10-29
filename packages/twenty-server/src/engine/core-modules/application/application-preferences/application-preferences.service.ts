@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { isNonEmptyArray } from 'twenty-shared/utils';
+import { isDefined, isNonEmptyArray } from 'twenty-shared/utils';
 
 import { type ApplicationPreferencesDTO } from 'src/engine/core-modules/application/application-preferences/dtos/application-preferences.dto';
 import { UserApplicationVariableValueService } from 'src/engine/core-modules/application/application-variable/user-application-variable-value.service';
@@ -55,26 +55,38 @@ export class ApplicationPreferencesService {
     ]);
 
     return installedFlatApplications
-      .map(({ id: applicationId }): ApplicationPreferencesDTO => ({
-        applicationId,
-        settingsMenuItems: findFlatEntitiesByApplicationId({
-          flatEntityMaps: flatSettingsMenuItemMaps,
+      .map(
+        ({
+          id: applicationId,
+          userHealthCheckLogicFunctionId,
+        }): ApplicationPreferencesDTO => ({
           applicationId,
-        })
-          .filter(({ scope }) => scope === 'USER')
-          .map(fromFlatSettingsMenuItemToSettingsMenuItemDto),
-        variables:
-          myUserApplicationVariableValuesByApplicationId[applicationId],
-        connectionProviders: connectionProviders.filter(
-          (connectionProvider) =>
-            connectionProvider.applicationId === applicationId,
-        ),
-      }))
+          settingsMenuItems: findFlatEntitiesByApplicationId({
+            flatEntityMaps: flatSettingsMenuItemMaps,
+            applicationId,
+          })
+            .filter(({ scope }) => scope === 'USER')
+            .map(fromFlatSettingsMenuItemToSettingsMenuItemDto),
+          variables:
+            myUserApplicationVariableValuesByApplicationId[applicationId],
+          connectionProviders: connectionProviders.filter(
+            (connectionProvider) =>
+              connectionProvider.applicationId === applicationId,
+          ),
+          hasUserHealthCheck: isDefined(userHealthCheckLogicFunctionId),
+        }),
+      )
       .filter(
-        ({ settingsMenuItems, variables, connectionProviders }) =>
+        ({
+          settingsMenuItems,
+          variables,
+          connectionProviders,
+          hasUserHealthCheck,
+        }) =>
           isNonEmptyArray(settingsMenuItems) ||
           isNonEmptyArray(variables) ||
-          isNonEmptyArray(connectionProviders),
+          isNonEmptyArray(connectionProviders) ||
+          hasUserHealthCheck,
       );
   }
 }
