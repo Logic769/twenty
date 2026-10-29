@@ -391,6 +391,7 @@ export class WorkspaceResolver {
 
     return !(await this.billingPortalWorkspaceService.hasReachedTrialLimit({
       userId: user.id,
+      userEmail: user.email,
       workspaceId: workspace.id,
     }));
   }
