@@ -1,4 +1,4 @@
-import { getIframeMediaAllow } from '../getIframeMediaAllow';
+import { getIframeMediaAllow } from '@/media-access/utils/getIframeMediaAllow';
 
 describe('getIframeMediaAllow', () => {
   it.each([undefined, ''])(

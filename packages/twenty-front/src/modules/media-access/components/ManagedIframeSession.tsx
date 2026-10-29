@@ -1,12 +1,13 @@
 import { ManagedIframeEnableButton } from '@/media-access/components/ManagedIframeEnableButton';
 import { ManagedIframeMediaAccessSessionEffect } from '@/media-access/components/ManagedIframeMediaAccessSessionEffect';
 import { type ManagedIframeElementProps } from '@/media-access/types/ManagedIframeElementProps';
+import { getIframeMediaAllow } from '@/media-access/utils/getIframeMediaAllow';
 import { isIframeMediaPermissionCovered } from '@/media-access/utils/isIframeMediaPermissionCovered';
 import { t } from '@lingui/core/macro';
 import { isNonEmptyString } from '@sniptt/guards';
 import { useCallback, useId, useState } from 'react';
 import { type IframeMediaPermission } from 'twenty-shared/types';
-import { getIframeMediaAllow, isDefined } from 'twenty-shared/utils';
+import { isDefined } from 'twenty-shared/utils';
 
 type ManagedIframeSessionProps = ManagedIframeElementProps & {
   ownerId: string;

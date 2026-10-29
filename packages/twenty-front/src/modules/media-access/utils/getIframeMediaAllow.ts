@@ -1,8 +1,9 @@
 import { isNonEmptyString } from '@sniptt/guards';
-
-import { type IframeMediaPermission } from '../../types/IframeMediaPermission';
-import { isDefined } from '../validation';
-import { normalizeIframeMediaPermissionOrigin } from './normalizeIframeMediaPermissionOrigin';
+import { type IframeMediaPermission } from 'twenty-shared/types';
+import {
+  isDefined,
+  normalizeIframeMediaPermissionOrigin,
+} from 'twenty-shared/utils';
 
 const MEDIA_DIRECTIVE_PREFIX_PATTERN = /^(?:microphone|camera)/i;
 

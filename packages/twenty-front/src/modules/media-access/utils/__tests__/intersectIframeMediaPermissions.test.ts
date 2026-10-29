@@ -1,4 +1,4 @@
-import { intersectIframeMediaPermissions } from '../intersectIframeMediaPermissions';
+import { intersectIframeMediaPermissions } from '@/media-access/utils/intersectIframeMediaPermissions';
 
 const PHONE_ORIGIN = 'https://phone.example.com';
 const VIDEO_ORIGIN = 'https://video.example.com';
