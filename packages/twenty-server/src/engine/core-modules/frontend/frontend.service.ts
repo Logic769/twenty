@@ -11,6 +11,7 @@ import { isDefined, normalizeAllowedIframeOrigin } from 'twenty-shared/utils';
 import { ClientConfigService } from 'src/engine/core-modules/client-config/services/client-config.service';
 import { WorkspaceDomainsService } from 'src/engine/core-modules/domain/workspace-domains/services/workspace-domains.service';
 import { DOCUMENT_CONTENT_SECURITY_POLICY_DIRECTIVES } from 'src/engine/core-modules/frontend/constants/document-content-security-policy-directives.constant';
+import { buildIframeMediaPermissionsPolicy } from 'src/engine/core-modules/frontend/utils/build-iframe-media-permissions-policy.util';
 import { isFrontendDocumentRequest } from 'src/engine/core-modules/frontend/utils/is-frontend-document-request.util';
 import { renderFrontendHtml } from 'src/engine/core-modules/frontend/utils/render-frontend-html.util';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
@@ -109,6 +110,10 @@ export class FrontendService {
     response.setHeader('X-Content-Type-Options', 'nosniff');
     response.setHeader('X-Frame-Options', 'SAMEORIGIN');
     response.setHeader(
+      'Permissions-Policy',
+      buildIframeMediaPermissionsPolicy([]),
+    );
+    response.setHeader(
       'Content-Security-Policy',
       `frame-ancestors 'self'; ${DOCUMENT_CONTENT_SECURITY_POLICY_DIRECTIVES}`,
     );
@@ -139,6 +144,13 @@ export class FrontendService {
         .map(normalizeAllowedIframeOrigin)
         .filter(isDefined);
 
+      const iframeMediaPermissions = workspace?.iframeMediaPermissions ?? [];
+
+      response.setHeader(
+        'Permissions-Policy',
+        buildIframeMediaPermissionsPolicy(iframeMediaPermissions),
+      );
+
       if (allowedOrigins.length > 0) {
         response.setHeader(
           'Content-Security-Policy',
@@ -147,7 +159,13 @@ export class FrontendService {
         response.removeHeader('X-Frame-Options');
       }
 
-      response.type('html').end(renderFrontendHtml(template, clientConfig));
+      response.type('html').end(
+        renderFrontendHtml({
+          template,
+          clientConfig,
+          iframeMediaPermissions,
+        }),
+      );
     } catch (error) {
       this.logger.error('Unable to serve frontend document', error);
       response

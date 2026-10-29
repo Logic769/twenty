@@ -353,6 +353,7 @@ export { isValidHostname } from './url/isValidHostname';
 export { isValidUrl } from './url/isValidUrl';
 export { normalizeAllowedIframeOrigin } from './url/normalizeAllowedIframeOrigin';
 export { normalizeDomain } from './url/normalizeDomain';
+export { normalizeIframeMediaPermissionOrigin } from './url/normalizeIframeMediaPermissionOrigin';
 export { normalizeUrl } from './url/normalizeUrl';
 export { normalizeUrlOrigin } from './url/normalizeUrlOrigin';
 export { safeDecodeURIComponent } from './url/safeDecodeURIComponent';

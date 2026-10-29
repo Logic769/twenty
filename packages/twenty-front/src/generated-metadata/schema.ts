@@ -2737,6 +2737,13 @@ export type IframeConfiguration = {
   url?: Maybe<Scalars['String']['output']>;
 };
 
+export type IframeMediaPermission = {
+  __typename?: 'IframeMediaPermission';
+  camera: Scalars['Boolean']['output'];
+  microphone: Scalars['Boolean']['output'];
+  origin: Scalars['String']['output'];
+};
+
 export type ImapSmtpCaldavConnectionSuccess = {
   __typename?: 'ImapSmtpCaldavConnectionSuccess';
   connectedAccountId: Scalars['String']['output'];
@@ -3653,6 +3660,7 @@ export type Mutation = {
   updateWebhook: Webhook;
   updateWorkspace: Workspace;
   updateWorkspaceAllowedIframeOrigins: Workspace;
+  updateWorkspaceIframeMediaPermissions: Workspace;
   updateWorkspaceMemberRole: WorkspaceMember;
   updateWorkspaceMemberSettings: Scalars['Boolean']['output'];
   upgradeApplication: Scalars['Boolean']['output'];
@@ -5040,6 +5048,11 @@ export type MutationUpdateWorkspaceArgs = {
 
 export type MutationUpdateWorkspaceAllowedIframeOriginsArgs = {
   data: UpdateWorkspaceAllowedIframeOriginsInput;
+};
+
+
+export type MutationUpdateWorkspaceIframeMediaPermissionsArgs = {
+  data: UpdateWorkspaceIframeMediaPermissionsInput;
 };
 
 
@@ -7692,6 +7705,12 @@ export type UpdateWorkspaceAllowedIframeOriginsInput = {
   origin: Scalars['String']['input'];
 };
 
+export type UpdateWorkspaceIframeMediaPermissionsInput = {
+  camera: Scalars['Boolean']['input'];
+  microphone: Scalars['Boolean']['input'];
+  origin: Scalars['String']['input'];
+};
+
 export type UpdateWorkspaceInput = {
   aiAdditionalInstructions?: InputMaybe<Scalars['String']['input']>;
   aiAgentModelTier?: InputMaybe<AiModelTier>;
@@ -8468,6 +8487,7 @@ export type Workspace = {
   hasValidEnterpriseValidityToken: Scalars['Boolean']['output'];
   hasValidSignedEnterpriseKey: Scalars['Boolean']['output'];
   id: Scalars['UUID']['output'];
+  iframeMediaPermissions?: Maybe<Array<IframeMediaPermission>>;
   installedApplications: Array<Application>;
   inviteHash?: Maybe<Scalars['String']['output']>;
   isAutoModelSelectionEnabled: Scalars['Boolean']['output'];
