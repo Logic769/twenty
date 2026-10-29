@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { Provider as JotaiProvider } from 'jotai';
 
 import { AgentChatThreadMarkAsReadEffect } from '@/ai/components/AgentChatThreadMarkAsReadEffect';
@@ -139,6 +139,19 @@ describe('AgentChatThreadMarkAsReadEffect', () => {
         [THREAD_ID]: { ...PARTICIPANT, lastReadAt },
       });
 
+    const deferReadSave = () => {
+      let saveRead: () => void = () => undefined;
+
+      updateAgentChatThreadInboxState.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            saveRead = resolve;
+          }),
+      );
+
+      return () => act(async () => saveRead());
+    };
+
     it('files a chat the member read up to the agent reply', () => {
       setReadUpTo(LAST_ACTIVITY_AT);
 
@@ -172,6 +185,36 @@ describe('AgentChatThreadMarkAsReadEffect', () => {
 
     it('keeps a chat whose reply the member has not read', () => {
       renderChatView().unmount();
+
+      expect(updateAgentChatThreadInboxState).not.toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'ARCHIVE_IF_SETTLED' }),
+      );
+    });
+
+    it('files the chat once a read sent before leaving is saved', async () => {
+      const saveRead = deferReadSave();
+
+      renderChatView().unmount();
+
+      expect(updateAgentChatThreadInboxState).not.toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'ARCHIVE_IF_SETTLED' }),
+      );
+
+      setReadUpTo(LAST_ACTIVITY_AT);
+      await saveRead();
+
+      expect(updateAgentChatThreadInboxState).toHaveBeenCalledWith({
+        threadIds: [THREAD_ID],
+        action: 'ARCHIVE_IF_SETTLED',
+      });
+    });
+
+    it('keeps a chat still on screen when its read is saved', async () => {
+      const saveRead = deferReadSave();
+
+      renderChatView();
+      setReadUpTo(LAST_ACTIVITY_AT);
+      await saveRead();
 
       expect(updateAgentChatThreadInboxState).not.toHaveBeenCalledWith(
         expect.objectContaining({ action: 'ARCHIVE_IF_SETTLED' }),
