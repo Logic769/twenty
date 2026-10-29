@@ -75,7 +75,7 @@ export const useApplicationVariablesDraft = <
     }));
   };
 
-  const saveApplicationVariables = async () => {
+  const saveApplicationVariables = async (): Promise<boolean> => {
     const submittedValueByKey = Object.fromEntries(
       editedApplicationVariables.map(({ key, value }) => [key, value]),
     );
@@ -103,11 +103,15 @@ export const useApplicationVariablesDraft = <
           ),
         ),
       );
+
+      return true;
     } catch {
       enqueueToast({
         status: 'error',
         children: t`Failed to save the app settings.`,
       });
+
+      return false;
     } finally {
       setIsSavingApplicationVariables(false);
     }

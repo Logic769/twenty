@@ -12,6 +12,7 @@ const APPLICATION_PROPERTIES_TO_STRIP = [
   'preInstallLogicFunction',
   'uninstallLogicFunction',
   'healthCheckLogicFunction',
+  'userHealthCheckLogicFunction',
   'settingsFrontComponent',
   'settingsCustomTabFrontComponentUniversalIdentifier',
   'frontComponentSharedDependencies',

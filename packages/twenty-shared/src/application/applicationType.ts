@@ -40,6 +40,7 @@ export type ApplicationManifest = SyncableEntityOptions & {
   preInstallLogicFunction?: PreInstallLogicFunctionApplicationManifest;
   uninstallLogicFunction?: UninstallLogicFunctionApplicationManifest;
   healthCheckLogicFunction?: HealthCheckLogicFunctionApplicationManifest;
+  userHealthCheckLogicFunction?: HealthCheckLogicFunctionApplicationManifest;
   settingsFrontComponent?: SettingsFrontComponentApplicationManifest;
   frontComponentSharedDependencies?: FrontComponentSharedDependenciesManifest;
   /**

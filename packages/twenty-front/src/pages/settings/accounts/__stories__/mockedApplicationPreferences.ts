@@ -137,11 +137,37 @@ const maskStoredSecret = (storedValue: string | undefined) => {
 export const updateMyUserApplicationVariable = fn();
 export const findOneFrontComponent = fn();
 export const findApplicationsGatedQuery = fn();
+export const runMyApplicationHealthCheck = fn();
+
+type MockedUserHealthCheckResult = {
+  status: string;
+  title: string | null;
+  description: string | null;
+  action: { label: string; location: string | null } | null;
+};
+
+const userHealthCheckResultByApplicationId = new Map<
+  string,
+  MockedUserHealthCheckResult
+>();
+
+export const declareUserHealthCheck = ({
+  applicationId,
+  result,
+}: {
+  applicationId: string;
+  result: MockedUserHealthCheckResult;
+}) => {
+  userHealthCheckResultByApplicationId.set(applicationId, result);
+};
 
 const buildApplicationPreferences = () => [
   {
     __typename: 'ApplicationPreferences',
     applicationId: FATHOM_APPLICATION_ID,
+    hasUserHealthCheck: userHealthCheckResultByApplicationId.has(
+      FATHOM_APPLICATION_ID,
+    ),
     connectionProviders: [FATHOM_CONNECTION_PROVIDER],
     settingsMenuItems: [],
     variables: [
@@ -172,6 +198,9 @@ const buildApplicationPreferences = () => [
   {
     __typename: 'ApplicationPreferences',
     applicationId: GRANOLA_APPLICATION_ID,
+    hasUserHealthCheck: userHealthCheckResultByApplicationId.has(
+      GRANOLA_APPLICATION_ID,
+    ),
     connectionProviders: [],
     settingsMenuItems: [
       buildSettingsMenuItem({
@@ -194,6 +223,7 @@ const buildApplicationPreferences = () => [
   {
     __typename: 'ApplicationPreferences',
     applicationId: NOT_INSTALLED_APPLICATION_ID,
+    hasUserHealthCheck: false,
     connectionProviders: [],
     settingsMenuItems: [],
     variables: [
@@ -230,6 +260,27 @@ export const failNextApplicationPreferencesRequest = () => {
             },
           ],
         }),
+      { once: true },
+    ),
+  );
+};
+
+export const failNextUserHealthCheckRequest = () => {
+  getWorker().use(
+    graphql.mutation(
+      'RunMyApplicationHealthCheck',
+      ({ variables }) => {
+        runMyApplicationHealthCheck(variables);
+
+        return HttpResponse.json({
+          errors: [
+            {
+              message: 'Rate limit reached. Please try again later.',
+              extensions: { code: 'BAD_USER_INPUT', subCode: 'LIMIT_REACHED' },
+            },
+          ],
+        });
+      },
       { once: true },
     ),
   );
@@ -272,6 +323,30 @@ export const APPLICATION_PREFERENCES_GRAPHQL_HANDLERS = [
 
     return HttpResponse.json({
       data: { updateMyUserApplicationVariable: true },
+    });
+  }),
+  graphql.mutation('RunMyApplicationHealthCheck', ({ variables }) => {
+    runMyApplicationHealthCheck(variables);
+
+    const result = userHealthCheckResultByApplicationId.get(
+      variables.applicationId,
+    );
+
+    return HttpResponse.json({
+      data: {
+        runMyApplicationHealthCheck: isDefined(result)
+          ? {
+              __typename: 'ApplicationHealthCheckResult',
+              ...result,
+              action: isDefined(result.action)
+                ? {
+                    __typename: 'ApplicationHealthCheckAction',
+                    ...result.action,
+                  }
+                : null,
+            }
+          : null,
+      },
     });
   }),
   GENERATE_TRANSIENT_TOKEN_GRAPHQL_HANDLER,
@@ -343,8 +418,10 @@ export const APPLICATION_PREFERENCES_DETAIL_GRAPHQL_HANDLERS = [
 export const seedApplicationPreferencesStory = async () => {
   savedValueByKey.clear();
   savedValueByKey.set('PERSONAL_API_KEY', SAVED_PERSONAL_API_KEY);
+  userHealthCheckResultByApplicationId.clear();
   resetLinearApplicationPreferencesMocks();
   updateMyUserApplicationVariable.mockClear();
+  runMyApplicationHealthCheck.mockClear();
   findOneFrontComponent.mockClear();
   findApplicationsGatedQuery.mockClear();
 

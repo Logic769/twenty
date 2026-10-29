@@ -20,6 +20,7 @@ import { type ApplicationConfig } from '@/app/manifest/types/application-config.
 import { type LogicFunctionConfig } from '@/app/manifest/types/logic-function-config.type';
 import { type CommandMenuItemConfig } from '@/app/manifest/types/command-menu-item-config.type';
 import { type FrontComponentConfig } from '@/app/manifest/types/front-component-config.type';
+import { type HealthCheckLogicFunctionConfig } from '@/app/manifest/types/health-check-logic-function-config.type';
 import { type IndexConfig } from '@/app/manifest/types/index-config.type';
 import { type PostInstallLogicFunctionConfig } from '@/app/manifest/types/post-install-logic-function-config.type';
 import { type PreInstallLogicFunctionConfig } from '@/app/manifest/types/pre-install-logic-function-config.type';
@@ -136,6 +137,8 @@ export const buildManifest = async (
   const uninstallLogicFunctions: UninstallLogicFunctionApplicationManifest[] =
     [];
   const healthCheckLogicFunctions: HealthCheckLogicFunctionApplicationManifest[] =
+    [];
+  const userHealthCheckLogicFunctions: HealthCheckLogicFunctionApplicationManifest[] =
     [];
   const settingsFrontComponentUniversalIdentifiers: string[] = [];
   const applicationRoleUniversalIdentifiers: string[] = [];
@@ -373,9 +376,17 @@ export const buildManifest = async (
         }
 
         if (targetFunctionName === 'defineHealthCheck') {
-          healthCheckLogicFunctions.push({
+          const healthCheck = {
             universalIdentifier: extract.config.universalIdentifier,
-          });
+          };
+
+          if (
+            (extract.config as HealthCheckLogicFunctionConfig).scope === 'USER'
+          ) {
+            userHealthCheckLogicFunctions.push(healthCheck);
+          } else {
+            healthCheckLogicFunctions.push(healthCheck);
+          }
         }
 
         break;
@@ -615,7 +626,11 @@ export const buildManifest = async (
   }
 
   if (healthCheckLogicFunctions.length > 1) {
-    errors.push('Only one health check is allowed per application');
+    errors.push('Only one WORKSPACE health check is allowed per application');
+  }
+
+  if (userHealthCheckLogicFunctions.length > 1) {
+    errors.push('Only one USER health check is allowed per application');
   }
 
   if (settingsFrontComponentUniversalIdentifiers.length > 1) {
@@ -697,6 +712,12 @@ export const buildManifest = async (
               : {}),
             ...(healthCheckLogicFunctions.length >= 1
               ? { healthCheckLogicFunction: healthCheckLogicFunctions[0] }
+              : {}),
+            ...(userHealthCheckLogicFunctions.length >= 1
+              ? {
+                  userHealthCheckLogicFunction:
+                    userHealthCheckLogicFunctions[0],
+                }
               : {}),
             ...(settingsFrontComponentUniversalIdentifiers.length >= 1
               ? {

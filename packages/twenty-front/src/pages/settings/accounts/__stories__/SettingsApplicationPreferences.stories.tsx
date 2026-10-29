@@ -8,10 +8,12 @@ import {
 
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import { ErrorMessageEffect } from '@/error-handler/components/ErrorMessageEffect';
+import { myApplicationHealthCheckFamilyState } from '@/settings/app-preferences/states/myApplicationHealthCheckFamilyState';
 import { useLocation } from 'react-router-dom';
 import { jotaiStore } from '@/ui/utilities/state/jotai/jotaiStore';
 import { isDefined } from 'twenty-shared/utils';
 import { Toaster } from 'twenty-ui/components/feedback';
+import { ApplicationHealthStatus } from '~/generated-metadata/graphql';
 import { SettingsApplicationPreferences } from '~/pages/settings/accounts/SettingsApplicationPreferences';
 import {
   FATHOM_APPLICATION_ID,
@@ -20,10 +22,13 @@ import {
 import {
   APPLICATION_PREFERENCES_DETAIL_GRAPHQL_HANDLERS,
   GRANOLA_USER_SETTINGS_FRONT_COMPONENT_ID,
+  declareUserHealthCheck,
   failNextApplicationPreferencesRequest,
+  failNextUserHealthCheckRequest,
   stopApplicationForNextRequest,
   findApplicationsGatedQuery,
   findOneFrontComponent,
+  runMyApplicationHealthCheck,
   seedApplicationPreferencesStory,
   updateMyUserApplicationVariable,
 } from '~/pages/settings/accounts/__stories__/mockedApplicationPreferences';
@@ -132,6 +137,18 @@ export const ClearedValueFallsBackToTheDefault: Story = {
 
 export const MissingRequiredValueShowsBannerUntilSaved: Story = {
   args: { routeHash: '#variables' },
+  beforeEach: async () => {
+    await seedApplicationPreferencesStory();
+    declareUserHealthCheck({
+      applicationId: FATHOM_APPLICATION_ID,
+      result: {
+        status: 'WARNING',
+        title: 'Your Fathom plan does not include recordings',
+        description: null,
+        action: null,
+      },
+    });
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
@@ -142,6 +159,7 @@ export const MissingRequiredValueShowsBannerUntilSaved: Story = {
         { timeout: 3000 },
       ),
     ).toBeVisible();
+    expect(runMyApplicationHealthCheck).not.toHaveBeenCalled();
 
     const meetingLanguageRow = canvas
       .getByText('Meeting language')
@@ -172,6 +190,199 @@ export const MissingRequiredValueShowsBannerUntilSaved: Story = {
         },
       ],
     ]);
+    expect(
+      await canvas.findByText('Your Fathom plan does not include recordings'),
+    ).toBeVisible();
+
+    await userEvent.click(canvas.getByRole('link', { name: 'General' }));
+
+    expect(
+      await canvas.findByText(
+        'Records, transcribes and summarizes your meetings.',
+      ),
+    ).toBeVisible();
+    expect(
+      canvas.getByText('Your Fathom plan does not include recordings'),
+    ).toBeVisible();
+    expect(runMyApplicationHealthCheck.mock.calls).toEqual([
+      [{ applicationId: FATHOM_APPLICATION_ID }],
+    ]);
+  },
+};
+
+export const UserHealthCheckShowsItsBannerOnOpen: Story = {
+  args: {
+    routeParams: { ':applicationId': GRANOLA_APPLICATION_ID },
+  },
+  beforeEach: async () => {
+    await seedApplicationPreferencesStory();
+    declareUserHealthCheck({
+      applicationId: GRANOLA_APPLICATION_ID,
+      result: {
+        status: 'ERROR',
+        title: 'Your Granola key was revoked',
+        description: 'Add a new key to keep importing your notes.',
+        action: { label: 'Fix it', location: null },
+      },
+    });
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    expect(
+      await canvas.findByText('Your Granola key was revoked', undefined, {
+        timeout: 3000,
+      }),
+    ).toBeVisible();
+    expect(
+      canvas.getByText('Add a new key to keep importing your notes.'),
+    ).toBeVisible();
+    expect(
+      canvas.queryByRole('button', { name: 'Fix it' }),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(canvas.getByRole('link', { name: 'My notes' }));
+
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Fix it' }),
+    );
+
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('button', { name: 'Fix it' }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(canvas.getByText('Your Granola key was revoked')).toBeVisible();
+    expect(runMyApplicationHealthCheck.mock.calls).toEqual([
+      [{ applicationId: GRANOLA_APPLICATION_ID }],
+    ]);
+  },
+};
+
+export const AppWithoutUserHealthCheckNeverRunsIt: Story = {
+  args: {
+    routeParams: { ':applicationId': GRANOLA_APPLICATION_ID },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    expect(
+      await canvas.findByRole('link', { name: 'My notes' }, { timeout: 3000 }),
+    ).toBeVisible();
+    expect(runMyApplicationHealthCheck).not.toHaveBeenCalled();
+  },
+};
+
+export const UnreadableUserHealthCheckClearsTheBannerAfterSave: Story = {
+  args: { routeHash: '#variables' },
+  beforeEach: async () => {
+    await seedApplicationPreferencesStory();
+    declareUserHealthCheck({
+      applicationId: FATHOM_APPLICATION_ID,
+      result: {
+        status: 'ERROR',
+        title: 'Your Fathom key was revoked',
+        description: null,
+        action: null,
+      },
+    });
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText(
+      'Missing configuration: Meeting language',
+      undefined,
+      { timeout: 3000 },
+    );
+
+    const meetingLanguageRow = canvas
+      .getByText('Meeting language')
+      .closest<HTMLElement>('div:has(input)');
+
+    if (!isDefined(meetingLanguageRow)) {
+      throw new Error('Missing the Meeting language row');
+    }
+
+    const saveButton = canvas.getByRole('button', { name: 'Save settings' });
+
+    await userEvent.type(within(meetingLanguageRow).getByRole('textbox'), 'fr');
+    await waitFor(() => expect(saveButton).toBeEnabled());
+    await userEvent.click(saveButton);
+
+    expect(
+      await canvas.findByText('Your Fathom key was revoked', undefined, {
+        timeout: 3000,
+      }),
+    ).toBeVisible();
+
+    declareUserHealthCheck({
+      applicationId: FATHOM_APPLICATION_ID,
+      result: {
+        status: 'UNKNOWN',
+        title: null,
+        description: null,
+        action: null,
+      },
+    });
+
+    const recordMyMeetingsInput = canvas.getByDisplayValue('always');
+
+    await userEvent.clear(recordMyMeetingsInput);
+    await userEvent.type(recordMyMeetingsInput, 'never');
+    await waitFor(() => expect(saveButton).toBeEnabled());
+    await userEvent.click(saveButton);
+
+    await waitFor(() =>
+      expect(
+        canvas.queryByText('Your Fathom key was revoked'),
+      ).not.toBeInTheDocument(),
+    );
+    expect(runMyApplicationHealthCheck).toHaveBeenCalledTimes(2);
+  },
+};
+
+export const PreviousVisitResultIsClearedOnOpen: Story = {
+  args: {
+    routeParams: { ':applicationId': GRANOLA_APPLICATION_ID },
+  },
+  beforeEach: async () => {
+    await seedApplicationPreferencesStory();
+    declareUserHealthCheck({
+      applicationId: GRANOLA_APPLICATION_ID,
+      result: { status: 'OK', title: null, description: null, action: null },
+    });
+    failNextUserHealthCheckRequest();
+    jotaiStore.set(
+      myApplicationHealthCheckFamilyState.atomFamily(GRANOLA_APPLICATION_ID),
+      {
+        runId: 'previous-visit',
+        result: {
+          __typename: 'ApplicationHealthCheckResult',
+          status: ApplicationHealthStatus.ERROR,
+          title: 'Result from the previous visit',
+          description: null,
+          action: null,
+        },
+      },
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await waitFor(
+      () =>
+        expect(runMyApplicationHealthCheck.mock.calls).toEqual([
+          [{ applicationId: GRANOLA_APPLICATION_ID }],
+        ]),
+      { timeout: 3000 },
+    );
+    expect(await canvas.findByRole('link', { name: 'My notes' })).toBeVisible();
+    await waitFor(() =>
+      expect(
+        canvas.queryByText('Result from the previous visit'),
+      ).not.toBeInTheDocument(),
+    );
   },
 };
 

@@ -1,9 +1,13 @@
 import { getApplicationDisplayName } from '@/applications/utils/getApplicationDisplayName';
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import { SettingsAppPreferencesGeneralTab } from '@/settings/app-preferences/components/SettingsAppPreferencesGeneralTab';
+import { SettingsApplicationPreferencesHealthBanner } from '@/settings/app-preferences/components/SettingsApplicationPreferencesHealthBanner';
+import { SettingsApplicationPreferencesHealthCheckEffect } from '@/settings/app-preferences/components/SettingsApplicationPreferencesHealthCheckEffect';
 import { APPLICATION_PREFERENCES_GENERAL_TAB_ID } from '@/settings/app-preferences/constants/ApplicationPreferencesGeneralTabId';
 import { SETTINGS_APPLICATION_PREFERENCES_TAB_LIST_COMPONENT_ID } from '@/settings/app-preferences/constants/SettingsApplicationPreferencesTabListComponentId';
+import { useRunMyApplicationHealthCheck } from '@/settings/app-preferences/hooks/useRunMyApplicationHealthCheck';
 import { type ApplicationWithPreferences } from '@/settings/app-preferences/types/ApplicationWithPreferences';
+import { getApplicationPreferencesGeneralPath } from '@/settings/app-preferences/utils/getApplicationPreferencesGeneralPath';
 import { APPLICATION_VARIABLES_TAB_ID } from '@/settings/applications/constants/ApplicationVariablesTabId';
 import { getApplicationConfigurationTabId } from '@/settings/applications/utils/getApplicationConfigurationTabId';
 import { hasApplicationVariablesTab } from '@/settings/applications/utils/hasApplicationVariablesTab';
@@ -49,6 +53,7 @@ export const SettingsApplicationPreferencesDetail = ({
     variables,
     missingRequiredVariables,
     connectionProviders,
+    hasUserHealthCheck,
   },
   refetchApplicationsWithPreferences,
 }: SettingsApplicationPreferencesDetailProps) => {
@@ -56,6 +61,9 @@ export const SettingsApplicationPreferencesDetail = ({
   const { getIcon } = useIcons();
   const currentWorkspace = useAtomStateValue(currentWorkspaceState);
   const navigate = useNavigate();
+  const { runMyApplicationHealthCheck } = useRunMyApplicationHealthCheck(
+    application.id,
+  );
 
   const [updateMyUserApplicationVariable] = useMutation(
     UpdateMyUserApplicationVariableDocument,
@@ -82,6 +90,20 @@ export const SettingsApplicationPreferencesDetail = ({
       }),
     refetchApplicationVariables: refetchApplicationsWithPreferences,
   });
+
+  const hasMissingRequiredVariables = isNonEmptyArray(missingRequiredVariables);
+
+  const saveApplicationVariablesAndRecheckHealth = async () => {
+    const areApplicationVariablesSaved = await saveApplicationVariables();
+
+    if (
+      areApplicationVariablesSaved &&
+      hasUserHealthCheck &&
+      !hasMissingRequiredVariables
+    ) {
+      await runMyApplicationHealthCheck({ shouldKeepPreviousResult: true });
+    }
+  };
 
   const hasVariablesTab = hasApplicationVariablesTab({
     settingsMenuItems,
@@ -156,7 +178,7 @@ export const SettingsApplicationPreferencesDetail = ({
             variant="solid"
             color="accent"
             size="sm"
-            onClick={saveApplicationVariables}
+            onClick={saveApplicationVariablesAndRecheckHealth}
             disabled={
               !hasUnsavedApplicationVariables || isSavingApplicationVariables
             }
@@ -180,6 +202,22 @@ export const SettingsApplicationPreferencesDetail = ({
             }
           />
         )}
+      {hasUserHealthCheck && !hasMissingRequiredVariables && (
+        <>
+          <SettingsApplicationPreferencesHealthCheckEffect
+            key={application.id}
+            applicationId={application.id}
+          />
+          <SettingsApplicationPreferencesHealthBanner
+            applicationId={application.id}
+            fallbackLocation={
+              activeTabId === APPLICATION_PREFERENCES_GENERAL_TAB_ID
+                ? undefined
+                : getApplicationPreferencesGeneralPath(application.id)
+            }
+          />
+        </>
+      )}
       <SettingsApplicationStoppedBanner
         applicationUniversalIdentifier={application.universalIdentifier}
       />
