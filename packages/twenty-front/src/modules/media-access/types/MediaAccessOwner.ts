@@ -7,5 +7,5 @@ export type MediaAccessOwner =
       id: string;
       name: string;
       grantedCapabilities: readonly string[];
-      requestCapabilityApproval?: RequestMediaCapabilityApproval;
+      requestCapabilityApproval: RequestMediaCapabilityApproval;
     };

@@ -7,27 +7,18 @@ export const ManagedIframe = ({
   src,
   srcDoc,
   title,
-  id,
-  name,
   className,
   style,
   width,
   height,
   hidden,
-  loading,
-  referrerPolicy,
-  tabIndex,
   onLoad,
   onError,
-  onClick,
-  onFocus,
-  onBlur,
   sandbox,
   allow,
   allowFullScreen,
   renderIframe,
   iframeElement,
-  iframeId,
   owner,
   requestedMediaCapabilities,
   iframeMediaPermissions,
@@ -39,39 +30,27 @@ export const ManagedIframe = ({
     iframeMediaPermissions,
     hostOrigin: window.location.origin,
   });
-  const sessionKey = JSON.stringify({
-    iframeId,
-    ownerId: owner.id,
-    ownerType: owner.type,
-  });
+  const ownerId = `${owner.type}:${owner.id}`;
 
   return (
     <ManagedIframeSession
-      key={sessionKey}
+      key={ownerId}
       src={src}
       srcDoc={srcDoc}
       title={title}
-      id={id}
-      name={name}
       className={className}
       style={style}
       width={width}
       height={height}
       hidden={hidden}
-      loading={loading}
-      referrerPolicy={referrerPolicy}
-      tabIndex={tabIndex}
       onLoad={onLoad}
       onError={onError}
-      onClick={onClick}
-      onFocus={onFocus}
-      onBlur={onBlur}
       sandbox={sandbox}
       allow={allow}
       allowFullScreen={allowFullScreen}
       renderIframe={renderIframe}
       iframeElement={iframeElement}
-      ownerId={`${owner.type}:${owner.id}`}
+      ownerId={ownerId}
       ownerName={owner.name}
       permission={permission}
       grantedPermission={

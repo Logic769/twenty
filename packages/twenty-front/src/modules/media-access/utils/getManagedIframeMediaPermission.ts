@@ -1,4 +1,5 @@
 import { type ManagedIframeProps } from '@/media-access/types/ManagedIframeProps';
+import { restrictIframeMediaPermission } from '@/media-access/utils/restrictIframeMediaPermission';
 import { isNonEmptyString } from '@sniptt/guards';
 import { type IframeMediaPermission } from 'twenty-shared/types';
 import {
@@ -39,22 +40,10 @@ export const getManagedIframeMediaPermission = ({
     return null;
   }
 
-  const permission = iframeMediaPermissions.find(
-    (candidate) => candidate.origin === origin,
-  );
-
-  if (!isDefined(permission)) {
-    return null;
-  }
-
-  const microphone =
-    permission.microphone && requestedMediaCapabilities.includes('microphone');
-  const camera =
-    permission.camera && requestedMediaCapabilities.includes('camera');
-
-  if (!microphone && !camera) {
-    return null;
-  }
-
-  return { origin, microphone, camera };
+  return restrictIframeMediaPermission({
+    permission:
+      iframeMediaPermissions.find((candidate) => candidate.origin === origin) ??
+      null,
+    capabilities: requestedMediaCapabilities,
+  });
 };

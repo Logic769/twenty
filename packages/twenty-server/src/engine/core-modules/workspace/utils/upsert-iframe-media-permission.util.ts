@@ -7,19 +7,18 @@ export const upsertIframeMediaPermission = ({
   permissions: IframeMediaPermission[];
   permission: IframeMediaPermission;
 }): IframeMediaPermission[] => {
-  const hasCapability = permission.microphone || permission.camera;
+  if (!permission.microphone && !permission.camera) {
+    return permissions.filter(
+      (existingPermission) => existingPermission.origin !== permission.origin,
+    );
+  }
+
   const isConfiguredOrigin = permissions.some(
     (existingPermission) => existingPermission.origin === permission.origin,
   );
 
   if (!isConfiguredOrigin) {
-    return hasCapability ? [...permissions, permission] : permissions;
-  }
-
-  if (!hasCapability) {
-    return permissions.filter(
-      (existingPermission) => existingPermission.origin !== permission.origin,
-    );
+    return [...permissions, permission];
   }
 
   return permissions.map((existingPermission) =>

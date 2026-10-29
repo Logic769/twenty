@@ -12,7 +12,6 @@ import { type IframeMediaPermission } from 'twenty-shared/types';
 import { getIframeMediaAllow, isDefined } from 'twenty-shared/utils';
 
 type ManagedIframeSessionProps = ManagedIframeElementProps & {
-  iframeElement?: Element | null;
   ownerId: string;
   ownerName: string;
   permission: IframeMediaPermission | null;
@@ -36,21 +35,13 @@ export const ManagedIframeSession = ({
   src,
   srcDoc,
   title,
-  id,
-  name,
   className,
   style,
   width,
   height,
   hidden,
-  loading,
-  referrerPolicy,
-  tabIndex,
   onLoad,
   onError,
-  onClick,
-  onFocus,
-  onBlur,
   sandbox,
   allow,
   allowFullScreen,
@@ -82,28 +73,23 @@ export const ManagedIframeSession = ({
     setActivatedPermission(null);
   }
 
-  const enablePermission = isDefined(requestCapabilityApproval)
-    ? permission
-    : grantedPermission;
-  const anchorElement = isDefined(renderIframe)
-    ? iframeElement
-    : nativeIframeElement;
+  const anchorElement = iframeElement ?? nativeIframeElement;
   const handleDeactivate = useCallback(() => {
     setActivatedPermission(null);
   }, []);
   const handleEnable = async () => {
-    if (!isDefined(enablePermission)) {
+    if (!isDefined(permission)) {
       return;
     }
 
     if (
       !isDefined(requestCapabilityApproval) ||
       isIframeMediaPermissionCovered({
-        permission: enablePermission,
+        permission,
         coveringPermission: grantedPermission,
       })
     ) {
-      setActivatedPermission(enablePermission);
+      setActivatedPermission(permission);
       return;
     }
 
@@ -111,13 +97,13 @@ export const ManagedIframeSession = ({
 
     try {
       const approvedCapabilities = await requestCapabilityApproval({
-        mediaTypes: getIframeMediaPermissionMediaTypes(enablePermission),
+        mediaTypes: getIframeMediaPermissionMediaTypes(permission),
         abortSignal: new AbortController().signal,
       });
 
       setActivatedPermission(
         restrictIframeMediaPermission({
-          permission: enablePermission,
+          permission,
           capabilities: approvedCapabilities,
         }),
       );
@@ -158,34 +144,26 @@ export const ManagedIframeSession = ({
             src={src}
             srcDoc={srcDoc}
             title={title}
-            id={id}
-            name={name}
             className={className}
             style={style}
             width={width}
             height={height}
             hidden={hidden}
-            loading={loading}
-            referrerPolicy={referrerPolicy}
-            tabIndex={tabIndex}
             onLoad={onLoad}
             onError={onError}
-            onClick={onClick}
-            onFocus={onFocus}
-            onBlur={onBlur}
             sandbox={iframeSandbox}
             allow={iframeAllow}
             allowFullScreen={allowFullScreen}
           />
         )}
       </Fragment>
-      {isDefined(enablePermission) &&
+      {isDefined(permission) &&
         !isActivated &&
         !hidden &&
         isDefined(anchorElement) && (
           <ManagedIframeEnableButton
             anchorElement={anchorElement}
-            label={getEnableLabel(enablePermission)}
+            label={getEnableLabel(permission)}
             disabled={isRequestingApproval}
             onClick={() => void handleEnable()}
           />

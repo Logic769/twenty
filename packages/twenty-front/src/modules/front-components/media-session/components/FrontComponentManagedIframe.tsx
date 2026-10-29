@@ -1,7 +1,6 @@
 import { useFrontComponentIframeOwnerOrThrow } from '@/front-components/media-session/contexts/FrontComponentIframeOwnerContext';
 import { ManagedIframe } from '@/media-access/components/ManagedIframe';
 import { useWorkspaceIframeMediaPermissions } from '@/media-access/hooks/useWorkspaceIframeMediaPermissions';
-import { useId } from 'react';
 import {
   type FrontComponentIframeHostProps,
   getRequestedIframeMediaCapabilities,
@@ -15,12 +14,10 @@ export const FrontComponentManagedIframe = ({
   renderIframe,
 }: FrontComponentManagedIframeProps) => {
   const owner = useFrontComponentIframeOwnerOrThrow();
-  const iframeId = useId();
   const iframeMediaPermissions = useWorkspaceIframeMediaPermissions();
 
   return (
     <ManagedIframe
-      iframeId={iframeId}
       renderIframe={renderIframe}
       iframeElement={iframeElement}
       owner={owner}

@@ -68,7 +68,6 @@ const ManagedIframePreview = ({
       </Button>
       <div style={{ width: 500, height: 250 }}>
         <ManagedIframe
-          iframeId="phone"
           owner={{ type: 'workspace-widget', id: 'phone', name: 'Aircall' }}
           iframeMediaPermissions={isGranted ? [MICROPHONE_PERMISSION] : []}
           requestedMediaCapabilities={['microphone', 'camera']}
