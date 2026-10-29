@@ -1,4 +1,5 @@
 import { mediaAccessSessionsState } from '@/media-access/states/mediaAccessSessionsState';
+import { getMediaAccessOwnerId } from '@/media-access/utils/getMediaAccessOwnerId';
 import { useSetAtomState } from '@/ui/utilities/state/jotai/hooks/useSetAtomState';
 import { useEffect, useId } from 'react';
 import {
@@ -42,7 +43,10 @@ export const FrontComponentMediaSessionRegistrationEffect = ({
       ...sessions.filter((session) => session.id !== id),
       {
         id,
-        ownerId: `application:${applicationId}`,
+        ownerId: getMediaAccessOwnerId({
+          type: 'application',
+          id: applicationId,
+        }),
         ownerName: applicationName,
         status: isNonEmptyArray(activeMediaTypes) ? 'capturing' : 'pending',
         mediaTypes: isNonEmptyArray(activeMediaTypes)

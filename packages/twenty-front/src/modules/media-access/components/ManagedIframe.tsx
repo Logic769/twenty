@@ -1,6 +1,7 @@
 import { ManagedIframeSession } from '@/media-access/components/ManagedIframeSession';
 import { type ManagedIframeProps } from '@/media-access/types/ManagedIframeProps';
 import { getManagedIframeMediaPermission } from '@/media-access/utils/getManagedIframeMediaPermission';
+import { getMediaAccessOwnerId } from '@/media-access/utils/getMediaAccessOwnerId';
 
 export const ManagedIframe = ({
   src,
@@ -27,7 +28,7 @@ export const ManagedIframe = ({
     iframeMediaPermissions,
     hostOrigin: window.location.origin,
   });
-  const ownerId = `${owner.type}:${owner.id}`;
+  const ownerId = getMediaAccessOwnerId(owner);
 
   return (
     <ManagedIframeSession

@@ -1,3 +1,4 @@
+import { type MediaCapability } from '@/media-access/types/MediaCapability';
 import { type IframeMediaPermission } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
@@ -6,7 +7,7 @@ export const restrictIframeMediaPermission = ({
   capabilities,
 }: {
   permission: IframeMediaPermission | null;
-  capabilities: readonly string[];
+  capabilities: readonly MediaCapability[];
 }): IframeMediaPermission | null => {
   if (!isDefined(permission)) {
     return null;
