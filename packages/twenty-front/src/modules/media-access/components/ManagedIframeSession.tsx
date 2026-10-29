@@ -1,8 +1,8 @@
 import { ManagedIframeEnableButton } from '@/media-access/components/ManagedIframeEnableButton';
 import { ManagedIframeMediaAccessSessionEffect } from '@/media-access/components/ManagedIframeMediaAccessSessionEffect';
 import { type ManagedIframeElementProps } from '@/media-access/types/ManagedIframeElementProps';
+import { getDelegatedIframeMediaPermission } from '@/media-access/utils/getDelegatedIframeMediaPermission';
 import { getIframeMediaAllow } from '@/media-access/utils/getIframeMediaAllow';
-import { isIframeMediaPermissionCovered } from '@/media-access/utils/isIframeMediaPermissionCovered';
 import { t } from '@lingui/core/macro';
 import { isNonEmptyString } from '@sniptt/guards';
 import { useCallback, useId, useState } from 'react';
@@ -51,14 +51,10 @@ export const ManagedIframeSession = ({
   );
   const [activatedPermission, setActivatedPermission] =
     useState<IframeMediaPermission | null>(null);
-  const delegatedPermission =
-    isDefined(activatedPermission) &&
-    isIframeMediaPermissionCovered({
-      permission: activatedPermission,
-      coveringPermission: permission,
-    })
-      ? activatedPermission
-      : null;
+  const delegatedPermission = getDelegatedIframeMediaPermission({
+    activatedPermission,
+    permission,
+  });
   const isActivated = isDefined(delegatedPermission);
 
   if (isDefined(activatedPermission) && !isActivated) {

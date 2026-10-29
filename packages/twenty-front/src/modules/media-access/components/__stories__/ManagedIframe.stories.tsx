@@ -2,6 +2,7 @@ import { ManagedIframe } from '@/media-access/components/ManagedIframe';
 import { MediaAccessIndicator } from '@/media-access/components/MediaAccessIndicator';
 import { mediaAccessSessionsState } from '@/media-access/states/mediaAccessSessionsState';
 import { type MediaAccessSession } from '@/media-access/types/MediaAccessSession';
+import { getMediaAccessOwnerId } from '@/media-access/utils/getMediaAccessOwnerId';
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { createStore, Provider } from 'jotai';
 import { type CSSProperties, useState } from 'react';
@@ -24,6 +25,15 @@ const MICROPHONE_PERMISSION = {
   camera: false,
 };
 
+const NATIVE_CAPTURE_SESSION: MediaAccessSession = {
+  id: 'recorder-session',
+  ownerId: getMediaAccessOwnerId({ type: 'application', id: 'recorder' }),
+  ownerName: 'Native recorder',
+  status: 'capturing',
+  mediaTypes: ['video'],
+  onStop: fn(),
+};
+
 const CLASS_SIZED_IFRAME_CLASS_NAME = 'managed-iframe-story-class-sized';
 
 const ManagedIframePreview = ({
@@ -39,19 +49,10 @@ const ManagedIframePreview = ({
   const [isGranted, setIsGranted] = useState(true);
   const [store] = useState(() => {
     const previewStore = createStore();
-    const sessions: MediaAccessSession[] = hasNativeCapture
-      ? [
-          {
-            id: 'recorder-session',
-            ownerId: 'application:recorder',
-            ownerName: 'Native recorder',
-            status: 'capturing',
-            mediaTypes: ['video'],
-            onStop: fn(),
-          },
-        ]
-      : [];
-    previewStore.set(mediaAccessSessionsState.atom, sessions);
+    previewStore.set(
+      mediaAccessSessionsState.atom,
+      hasNativeCapture ? [NATIVE_CAPTURE_SESSION] : [],
+    );
 
     return previewStore;
   });
