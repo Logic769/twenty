@@ -438,6 +438,21 @@ export class ApplicationManifestMigrationService {
         })
       : null;
 
+    const userHealthCheckLogicFunctionUniversalIdentifier =
+      manifest.application.userHealthCheckLogicFunction?.universalIdentifier;
+
+    const userHealthCheckLogicFunctionId = isDefined(
+      userHealthCheckLogicFunctionUniversalIdentifier,
+    )
+      ? resolveApplicationReferenceIdOrThrow({
+          flatEntityMaps: refreshedFlatLogicFunctionMaps,
+          universalIdentifier: userHealthCheckLogicFunctionUniversalIdentifier,
+          referenceLabel: 'user health check logic function',
+          exceptionCode: ApplicationExceptionCode.LOGIC_FUNCTION_NOT_FOUND,
+          ownerApplicationId: ownerFlatApplication.id,
+        })
+      : null;
+
     const uninstallLogicFunctionUniversalIdentifier =
       manifest.application.uninstallLogicFunction?.universalIdentifier;
 
@@ -466,6 +481,10 @@ export class ApplicationManifestMigrationService {
       ...(isDefined(healthCheckLogicFunctionId) ||
       inferDeletionFromMissingEntities
         ? { healthCheckLogicFunctionId }
+        : {}),
+      ...(isDefined(userHealthCheckLogicFunctionId) ||
+      inferDeletionFromMissingEntities
+        ? { userHealthCheckLogicFunctionId }
         : {}),
       ...(isDefined(defaultRoleId) ? { defaultRoleId } : {}),
     });

@@ -1,0 +1,2 @@
+export const ADD_USER_HEALTH_CHECK_TO_APPLICATION_UPGRADE_COMMAND_NAME =
+  '2.54.0_AddUserHealthCheckToApplicationFastInstanceCommand_1793292526926';

@@ -137,6 +137,8 @@ export const buildManifest = async (
     [];
   const healthCheckLogicFunctions: HealthCheckLogicFunctionApplicationManifest[] =
     [];
+  const userHealthCheckLogicFunctions: HealthCheckLogicFunctionApplicationManifest[] =
+    [];
   const settingsFrontComponentUniversalIdentifiers: string[] = [];
   const applicationRoleUniversalIdentifiers: string[] = [];
   const applicationFilePaths: string[] = [];
@@ -373,9 +375,15 @@ export const buildManifest = async (
         }
 
         if (targetFunctionName === 'defineHealthCheck') {
-          healthCheckLogicFunctions.push({
+          const healthCheck = {
             universalIdentifier: extract.config.universalIdentifier,
-          });
+          };
+
+          if ('scope' in extract.config && extract.config.scope === 'USER') {
+            userHealthCheckLogicFunctions.push(healthCheck);
+          } else {
+            healthCheckLogicFunctions.push(healthCheck);
+          }
         }
 
         break;
@@ -615,7 +623,11 @@ export const buildManifest = async (
   }
 
   if (healthCheckLogicFunctions.length > 1) {
-    errors.push('Only one health check is allowed per application');
+    errors.push('Only one WORKSPACE health check is allowed per application');
+  }
+
+  if (userHealthCheckLogicFunctions.length > 1) {
+    errors.push('Only one USER health check is allowed per application');
   }
 
   if (settingsFrontComponentUniversalIdentifiers.length > 1) {
@@ -697,6 +709,12 @@ export const buildManifest = async (
               : {}),
             ...(healthCheckLogicFunctions.length >= 1
               ? { healthCheckLogicFunction: healthCheckLogicFunctions[0] }
+              : {}),
+            ...(userHealthCheckLogicFunctions.length >= 1
+              ? {
+                  userHealthCheckLogicFunction:
+                    userHealthCheckLogicFunctions[0],
+                }
               : {}),
             ...(settingsFrontComponentUniversalIdentifiers.length >= 1
               ? {

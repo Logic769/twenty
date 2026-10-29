@@ -47,4 +47,24 @@ describe('defineHealthCheck', () => {
     expect(result.success).toBe(false);
     expect(result.errors).toContain('Health check handler must be a function');
   });
+
+  it('should accept a USER scope', () => {
+    const result = defineHealthCheck({ ...validConfig, scope: 'USER' });
+
+    expect(result.success).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  it('should return error when scope is not WORKSPACE or USER', () => {
+    const result = defineHealthCheck({
+      ...validConfig,
+      // @ts-expect-error apps written in JavaScript can pass any shape
+      scope: 'TEAM',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toEqual([
+      'Health check scope must be one of WORKSPACE, USER',
+    ]);
+  });
 });

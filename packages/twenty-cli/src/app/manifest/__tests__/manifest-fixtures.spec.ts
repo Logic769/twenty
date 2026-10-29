@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 import { stop } from 'esbuild';
 import { EMPTY_YARN_LOCK_CONTENT } from 'twenty-shared/application';
+import { isDefined } from 'twenty-shared/utils';
 import {
   afterAll,
   afterEach,
@@ -359,6 +360,66 @@ export default defineWorkflow({
     if (!invalidResult.success) {
       expect(invalidResult.errors.join('\n')).toContain(
         'Unsupported step type',
+      );
+    }
+  }, 60000);
+
+  it('matches one health check per scope and rejects a second one in the same scope', async () => {
+    const appPath = await copyFixture('minimal-app');
+    const writeHealthCheck = ({
+      fileName,
+      universalIdentifier,
+      scope,
+    }: {
+      fileName: string;
+      universalIdentifier: string;
+      scope?: string;
+    }) =>
+      writeFile(
+        join(appPath, fileName),
+        `import { defineHealthCheck } from 'twenty-sdk/define';
+
+export default defineHealthCheck({
+  universalIdentifier: '${universalIdentifier}',
+  name: '${fileName}',
+  ${isDefined(scope) ? `scope: '${scope}',` : ''}
+  handler: () => ({ status: 'OK' }),
+});
+`,
+      );
+
+    await writeHealthCheck({
+      fileName: 'workspace.health-check.ts',
+      universalIdentifier: 'e1e2e3e4-e5e6-4000-8000-000000000070',
+    });
+    await writeHealthCheck({
+      fileName: 'user.health-check.ts',
+      universalIdentifier: 'e1e2e3e4-e5e6-4000-8000-000000000071',
+      scope: 'USER',
+    });
+    const result = await compareManifest(appPath);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.manifest.application.healthCheckLogicFunction).toEqual({
+        universalIdentifier: 'e1e2e3e4-e5e6-4000-8000-000000000070',
+      });
+      expect(result.manifest.application.userHealthCheckLogicFunction).toEqual({
+        universalIdentifier: 'e1e2e3e4-e5e6-4000-8000-000000000071',
+      });
+    }
+
+    await writeHealthCheck({
+      fileName: 'second-user.health-check.ts',
+      universalIdentifier: 'e1e2e3e4-e5e6-4000-8000-000000000072',
+      scope: 'USER',
+    });
+    const duplicateResult = await compareManifest(appPath);
+
+    expect(duplicateResult.success).toBe(false);
+    if (!duplicateResult.success) {
+      expect(duplicateResult.errors).toContain(
+        'Only one USER health check is allowed per application',
       );
     }
   }, 60000);

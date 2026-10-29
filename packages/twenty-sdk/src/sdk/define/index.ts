@@ -117,6 +117,7 @@ export type { HealthCheckLogicFunctionConfig } from '@/sdk/define/common/types/l
 export type {
   ApplicationHealthCheckAction,
   ApplicationHealthCheckResult,
+  HealthCheckScope,
 } from 'twenty-shared/application';
 export { ApplicationHealthStatus } from 'twenty-shared/application';
 export type { LogicFunctionConfig } from '@/sdk/define/common/types/loose-shared-types.type';

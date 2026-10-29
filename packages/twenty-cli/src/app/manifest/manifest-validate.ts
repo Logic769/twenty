@@ -66,6 +66,7 @@ const findUniversalIdentifiers = (obj: object): string[] => {
       key === 'preInstallLogicFunction' ||
       key === 'uninstallLogicFunction' ||
       key === 'healthCheckLogicFunction' ||
+      key === 'userHealthCheckLogicFunction' ||
       key === 'identifyAccountLogicFunction' ||
       key === 'authorizeLogicFunction' ||
       key === 'callbackLogicFunction' ||

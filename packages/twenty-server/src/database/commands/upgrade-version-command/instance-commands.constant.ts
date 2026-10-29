@@ -270,6 +270,7 @@ import { PurgeSoftDeletedAgentsSlowInstanceCommand } from 'src/database/commands
 import { AddGeolocationToUserSessionFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-54/2-54-instance-command-fast-1793274494191-add-geolocation-to-user-session';
 import { AddWorkspaceChatAssistantModesFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-54/2-54-instance-command-fast-1793280483473-add-workspace-chat-assistant-modes';
 import { AddRelatedRecordPathTableFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-54/2-54-instance-command-fast-1793291361887-add-related-record-path-table';
+import { AddUserHealthCheckToApplicationFastInstanceCommand } from 'src/database/commands/upgrade-version-command/2-54/2-54-instance-command-fast-1793292526926-add-user-health-check-to-application';
 
 export const INSTANCE_COMMANDS = [
   AddViewFieldGroupIdIndexOnViewFieldFastInstanceCommand,
@@ -542,4 +543,5 @@ export const INSTANCE_COMMANDS = [
   AddGeolocationToUserSessionFastInstanceCommand,
   AddWorkspaceChatAssistantModesFastInstanceCommand,
   AddRelatedRecordPathTableFastInstanceCommand,
+  AddUserHealthCheckToApplicationFastInstanceCommand,
 ];
