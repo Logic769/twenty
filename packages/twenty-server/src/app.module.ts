@@ -28,6 +28,7 @@ import { MiddlewareModule } from 'src/engine/middlewares/middleware.module';
 import { JwtModule } from 'src/engine/core-modules/jwt/jwt.module';
 import { UserSessionModule } from 'src/engine/core-modules/user-session/user-session.module';
 import { RestCoreMiddleware } from 'src/engine/middlewares/rest-core.middleware';
+import { SessionCookieAccessMiddleware } from 'src/engine/middlewares/session-cookie-access.middleware';
 import { TwentyOrmModule } from 'src/engine/twenty-orm/twenty-orm.module';
 import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/workspace-cache-storage.module';
 import { WorkspaceNotSuspendedGuard } from 'src/engine/guards/workspace-not-suspended.guard';
@@ -94,6 +95,11 @@ export class AppModule {
         { path: `${apiPath}/*path`, method: RequestMethod.ALL },
       ]),
     );
+
+    // Before the CSRF check and every other reader of the session cookie.
+    consumer
+      .apply(SessionCookieAccessMiddleware)
+      .forRoutes({ path: '*path', method: RequestMethod.ALL });
 
     // Before any middleware that authenticates from the session cookie.
     consumer

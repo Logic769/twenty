@@ -78,19 +78,6 @@ describe('UserSessionCookieService', () => {
     });
   });
 
-  it('should ignore the session cookie on front component host fetches', () => {
-    const request = buildRequest({
-      'sec-fetch-mode': 'cors',
-      [FRONT_COMPONENT_HOST_FETCH_HEADER_NAME]: '1',
-    });
-
-    expect(service.extractSessionTokenFromRequest(request)).toBeUndefined();
-    expect(
-      service.extractImpersonatorSessionTokenFromRequest(request),
-    ).toBeUndefined();
-    expect(service.hasSessionCookie(request)).toBe(false);
-  });
-
   it('should not set or clear session cookies in response to front component host fetches', () => {
     const response = buildResponse(
       buildRequest({ [FRONT_COMPONENT_HOST_FETCH_HEADER_NAME]: '1' }),

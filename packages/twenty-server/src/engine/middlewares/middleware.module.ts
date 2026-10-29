@@ -6,6 +6,7 @@ import { WorkspaceManyOrAllFlatEntityMapsCacheModule } from 'src/engine/metadata
 import { ApiAccessLogMiddleware } from 'src/engine/middlewares/api-access-log.middleware';
 import { CookieSessionCsrfMiddleware } from 'src/engine/middlewares/cookie-session-csrf.middleware';
 import { MiddlewareService } from 'src/engine/middlewares/middleware.service';
+import { SessionCookieAccessMiddleware } from 'src/engine/middlewares/session-cookie-access.middleware';
 import { UserSessionModule } from 'src/engine/core-modules/user-session/user-session.module';
 import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/workspace-cache-storage.module';
 
@@ -21,6 +22,7 @@ import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/
     MiddlewareService,
     CookieSessionCsrfMiddleware,
     ApiAccessLogMiddleware,
+    SessionCookieAccessMiddleware,
   ],
   exports: [MiddlewareService],
 })

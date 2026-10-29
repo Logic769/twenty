@@ -37,7 +37,7 @@ const isHttpsUrl = (url: string | undefined): boolean => {
   }
 };
 
-// Keep every session-cookie read and write in this service: it is the only place resolveSessionCookieAccess is enforced.
+// Reads need no access check: SessionCookieAccessMiddleware strips the cookie from denied requests. Writes are checked here.
 @Injectable()
 export class UserSessionCookieService {
   constructor(
@@ -59,7 +59,7 @@ export class UserSessionCookieService {
     );
   }
 
-  private extractAllowedSessionToken({
+  private extractSessionToken({
     request,
     secureCookieName,
     insecureCookieName,
@@ -68,19 +68,16 @@ export class UserSessionCookieService {
     secureCookieName: string;
     insecureCookieName: string;
   }): string | undefined {
-    const access = resolveSessionCookieAccess(request);
-
-    if (access === 'denied') {
-      return undefined;
-    }
-
     const sessionToken = extractUserSessionTokenFromRequestCookie(request, {
       secureCookieName,
       insecureCookieName,
       allowInsecureCookieName: !this.isSecureDeployment(),
     });
 
-    if (access === 'legacy' && isDefined(sessionToken)) {
+    if (
+      isDefined(sessionToken) &&
+      resolveSessionCookieAccess(request) === 'legacy'
+    ) {
       this.metricsService.incrementCounterBy({
         key: MetricsKeys.UserSessionCookieLegacyAccess,
         amount: 1,
@@ -92,7 +89,7 @@ export class UserSessionCookieService {
   }
 
   extractSessionTokenFromRequest(request: Request): string | undefined {
-    return this.extractAllowedSessionToken({
+    return this.extractSessionToken({
       request,
       secureCookieName: USER_SESSION_SECURE_COOKIE_NAME,
       insecureCookieName: USER_SESSION_COOKIE_NAME,
@@ -102,7 +99,7 @@ export class UserSessionCookieService {
   extractImpersonatorSessionTokenFromRequest(
     request: Request,
   ): string | undefined {
-    return this.extractAllowedSessionToken({
+    return this.extractSessionToken({
       request,
       secureCookieName: USER_SESSION_IMPERSONATOR_SECURE_COOKIE_NAME,
       insecureCookieName: USER_SESSION_IMPERSONATOR_COOKIE_NAME,
@@ -178,10 +175,7 @@ export class UserSessionCookieService {
   hasSessionCookie(request: Request): boolean {
     const cookieHeader = request.headers.cookie;
 
-    if (
-      !isNonEmptyString(cookieHeader) ||
-      !this.isSessionCookieAccessAllowed(request)
-    ) {
+    if (!isNonEmptyString(cookieHeader)) {
       return false;
     }
 
